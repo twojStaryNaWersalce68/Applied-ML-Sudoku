@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageOps
 from tqdm import tqdm
 from collections import Counter
 from datasets import load_dataset
@@ -8,21 +8,19 @@ from datasets import load_dataset
 dataset = load_dataset("Lexski/sudoku-image-recognition", split="train")
 
 # Use dataset[i]['image'/'cells'/'keypoints'] to access the data
-
 # Graph distribution of digits
-solved_digits = [0] * 10
-small_digits = [0] * 10
-unsolved_cell_amount = [0] * 10
+solved_digits = np.zeros(10, dtype=int)
+small_digits = np.zeros(10, dtype=int)
+unsolved_cell_amount = np.zeros(10, dtype=int)
 for sudoku in dataset['cells']:
     for row in sudoku:
         for cell in row:
             if cell[0] == 0:
-                digit_amount = 0
+                candidates = np.array(cell[1:])
+                valid_digits = candidates == 1
+                digit_amount = np.sum(valid_digits)
                 small_digits[0] += 1
-                for i in range(1, 10):
-                    if cell[i] == 1:
-                        digit_amount += 1
-                        small_digits[i] += 1
+                small_digits[1:] += valid_digits.astype(int)
                 unsolved_cell_amount[digit_amount] += 1
             else:
                 solved_digits[0] += 1
@@ -40,7 +38,7 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-candidate_sizes = list(range(1, 10))  # From 0 to 9 candidates
+candidate_sizes = list(range(1, 10))
 plt.figure(figsize=(10, 5))
 plt.bar(candidate_sizes, unsolved_cell_amount[1:])
 plt.xlabel("Number of Digits in Unsolved Cell")
@@ -68,7 +66,19 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# Graph image noise?
+# Graph grayscale image pixel intensity
+grayscale_images = []
+for image in dataset['image']:
+    grayscale_image = ImageOps.grayscale(image)
+    np_image = np.array(grayscale_image)
+    grayscale_images.append(np_image)
+all_pixels = np.concatenate([img.flatten() for img in grayscale_images])
+
+plt.hist(all_pixels, bins=256, range=(0, 255), color='red')
+plt.title("Histogram of Pixel Intensities for Grayscale Sudokus")
+plt.xlabel("Pixel Intensity")
+plt.ylabel("Frequency")
+plt.show()
 
 # Visual representation of images
 small_images = [img.resize((64, 64), Image.Resampling.LANCZOS) for img in dataset['image']]
