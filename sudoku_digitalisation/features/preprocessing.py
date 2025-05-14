@@ -60,6 +60,31 @@ def crop_to_bounding_box(ds, output_size=(450, 450)):
 
     return ds
 
+def adaptive_histogram_equalization(ds):
+    """
+    Applies adaptive histogram equalization to the image.
+    This is done using CLAHE algorithm.
+    """
+    image = np.array(ds['image'])
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    equalized_image = clahe.apply(image)
+    ds['image'] = Image.fromarray(equalized_image)
+    return ds
+
+def hough_transform(ds):
+    """
+    Applies Hough transform to the image.
+    This is done using cv2.HoughLinesP.
+    """
+    image = np.array(ds['image'])
+    edges = cv2.Canny(image, 50, 150, apertureSize=3)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=500, maxLineGap=100)
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
+    ds['image'] = Image.fromarray(image)
+    return ds
 
 def preprocess_dataset(ds_dict):
     """Preprocesses the dataset."""
@@ -67,6 +92,8 @@ def preprocess_dataset(ds_dict):
         print(split)
         ds_dict[split] = ds_dict[split].map(crop_to_bounding_box)
         ds_dict[split] = ds_dict[split].map(convert_to_grayscale)
+        ds_dict[split] = ds_dict[split].map(adaptive_histogram_equalization)
+        ds_dict[split] = ds_dict[split].map(hough_transform)
         show_image(dataset_dict[split][0]["image"])
         print(dataset_dict[split][0]["keypoints"])
 
@@ -74,8 +101,8 @@ def preprocess_dataset(ds_dict):
 if __name__ == '__main__':
     dataset_dict = load_data("Lexski/sudoku-image-recognition")
     example_image = dataset_dict["train"][0]["image"]
-    show_image(example_image)
-    print(type(example_image))
+    # show_image(example_image)
+    # print(type(example_image))
     preprocess_dataset(dataset_dict)
 
 
