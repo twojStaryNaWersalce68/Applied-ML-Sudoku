@@ -6,6 +6,10 @@ from tqdm import tqdm
 from collections import Counter
 from datasets import load_dataset
 
+from sklearn import svm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
 
 dataset = load_dataset("Lexski/sudoku-image-recognition", split="train")
 
@@ -86,6 +90,25 @@ def hough_transform(ds):
     ds['image'] = Image.fromarray(image)
     return ds
 
+def split_image(ds):
+    """
+    Splits the image into 81 cells.
+    """
+    image = np.array(ds['image'])
+    cells = []
+    cell_size = (image.shape[0] // 9, image.shape[1] // 9)
+    for i in range(9):
+        for j in range(9):
+            x_start = i * cell_size[0]
+            x_end = (i + 1) * cell_size[0]
+            y_start = j * cell_size[1]
+            y_end = (j + 1) * cell_size[1]
+            cell = image[x_start:x_end, y_start:y_end]
+            cells.append(cell)
+    ds['cells'] = cells
+    return ds
+    
+
 def preprocess_dataset(ds_dict):
     """Preprocesses the dataset."""
     for split in ds_dict:
@@ -93,17 +116,27 @@ def preprocess_dataset(ds_dict):
         ds_dict[split] = ds_dict[split].map(crop_to_bounding_box)
         ds_dict[split] = ds_dict[split].map(convert_to_grayscale)
         ds_dict[split] = ds_dict[split].map(adaptive_histogram_equalization)
-        ds_dict[split] = ds_dict[split].map(hough_transform)
-        show_image(dataset_dict[split][0]["image"])
-        print(dataset_dict[split][0]["keypoints"])
+        ds_dict[split] = ds_dict[split].map(split_image)
+
+    return ds_dict
 
 
 if __name__ == '__main__':
     dataset_dict = load_data("Lexski/sudoku-image-recognition")
-    example_image = dataset_dict["train"][0]["image"]
-    # show_image(example_image)
-    # print(type(example_image))
-    preprocess_dataset(dataset_dict)
+    ds_dict = preprocess_dataset(dataset_dict)
+
+    # Show one of the cells
+    sample_cell = ds_dict['train'][0]['cells'][0]
+    show_image(sample_cell)
+
+    # To be implemented: cell images matched with labels
+
+
+
+
+    
+    
+    
 
 
 
