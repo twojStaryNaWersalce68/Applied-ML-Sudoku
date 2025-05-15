@@ -6,13 +6,6 @@ from tqdm import tqdm
 from collections import Counter
 from datasets import load_dataset
 
-from sklearn import svm
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-
-
-dataset = load_dataset("Lexski/sudoku-image-recognition", split="train")
-
 
 def load_data(path):
     """Loads a dataset from huggingface.com."""
@@ -64,6 +57,7 @@ def crop_to_bounding_box(ds, output_size=(450, 450)):
 
     return ds
 
+
 def adaptive_histogram_equalization(ds):
     """
     Applies adaptive histogram equalization to the image.
@@ -75,20 +69,6 @@ def adaptive_histogram_equalization(ds):
     ds['image'] = Image.fromarray(equalized_image)
     return ds
 
-def hough_transform(ds):
-    """
-    Applies Hough transform to the image.
-    This is done using cv2.HoughLinesP.
-    """
-    image = np.array(ds['image'])
-    edges = cv2.Canny(image, 50, 150, apertureSize=3)
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=500, maxLineGap=100)
-    if lines is not None:
-        for line in lines:
-            x1, y1, x2, y2 = line[0]
-            cv2.line(image, (x1, y1), (x2, y2), (0, 255, 0), 2)
-    ds['image'] = Image.fromarray(image)
-    return ds
 
 def split_image(ds):
     """
