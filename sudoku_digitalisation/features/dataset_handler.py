@@ -51,9 +51,13 @@ class SudokuDatasetHandler:
             digits_path = os.path.join(self.save_path, "digits")
             self.digits_dataset.save_to_disk(digits_path)
 
-    def preprocess_dataset(self) -> None:
+    def full_preprocessing(self) -> None:
         pre, digits = self.preprocessor.dataset_preprocessing(self.dataset)
         self.preprocessed_dataset, self.digits_dataset = pre, digits
+
+    # RESHAPE DATASET FOR CNN
+
+    # RESHAPE DATASET FOR SVM
 
     def show_raw_image(self, split: str, index: int):
         if self.dataset is None:
@@ -92,14 +96,12 @@ class SudokuDatasetHandler:
 # python -m sudoku_digitalisation.features.dataset_handler
 
 if __name__ == '__main__':
-    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
-
-    # handler = load_sudoku_dataset(preprocessor, "Lexski/sudoku-image-recognition", hugface=True)
+    # handler = load_sudoku_dataset(SudokuPreprocessor(clip_limit=3, output_size=450), "Lexski/sudoku-image-recognition", hugface=True)
     # handler.save()
 
-    handler = load_sudoku_dataset(preprocessor)
+    handler = load_sudoku_dataset(SudokuPreprocessor(clip_limit=3, output_size=450))
 
-    handler.preprocess_dataset()
+    handler.full_preprocessing()
     handler.save()
 
     split = 'train'
@@ -107,3 +109,10 @@ if __name__ == '__main__':
     handler.show_raw_image(split, index)
     handler.show_preprocessed_image(split, index)
     handler.show_digits_images(split, index)
+
+    unlabeled_image = handler.dataset['test']['image'][0]
+    _, digits_list = handler.preprocessor.sudoku_preprocessing(unlabeled_image) # NEEDS EDGE DETECTION
+
+    print(handler.dataset)
+    print(handler.preprocessed_dataset)
+    print(handler.digits_dataset)

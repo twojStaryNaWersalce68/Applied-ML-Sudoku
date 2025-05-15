@@ -20,18 +20,18 @@ class SudokuPreprocessor:
         self.converter = ImageConverter(clip_limit)
         self.cropper = ImageCropper(output_size)
 
-    def preprocess_sudoku(self, image: Image.Image, keypoints: np.ndarray=None) -> Image.Image:
+    def preprocess_image(self, image: Image.Image, keypoints: np.ndarray=None) -> Image.Image:
         clahe_img = self.converter.apply_clahe(image)
         bbox = self.edge_detector.get_bounding_box(clahe_img, keypoints)
         cropped_img = self.cropper.crop_to_box(clahe_img, bbox)
         return cropped_img
 
     def preprocess_datapoint(self, dp: Dict[str, Any]) -> Dict[str, Any]:
-        image = self.preprocess_sudoku(dp['image'], dp['keypoints'])
+        image = self.preprocess_image(dp['image'], dp['keypoints'])
         dp['image'] = image
         return dp
     
-    def split_sudoku(self, sudoku: Image.Image):
+    def split_image(self, sudoku: Image.Image):
         return SudokuSplitter.split_image(sudoku)
     
     def split_datapoint(self, datapoint: Dict[str, Any]):
@@ -39,8 +39,8 @@ class SudokuPreprocessor:
     
     def sudoku_preprocessing(self, sudoku: Union[Image.Image, Dict[str, Any]]) -> Tuple[Any, Any]:
         if isinstance(sudoku, Image.Image):
-            preprocessed_img = self.preprocess_sudoku(sudoku)
-            digit_list = self.split_sudoku(sudoku)
+            preprocessed_img = self.preprocess_image(sudoku)
+            digit_list = self.split_image(sudoku)
             return preprocessed_img, digit_list
         elif isinstance(sudoku, dict):
             preprocessed_dp = self.preprocess_datapoint(sudoku)
