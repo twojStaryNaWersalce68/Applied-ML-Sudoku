@@ -1,21 +1,20 @@
 import matplotlib.pyplot as plt
 import os
-import shutil
 from datasets import load_dataset, load_from_disk, DatasetDict
-from sudoku_digitalisation.features.sudoku_preprocessing import SudokuPreprocessor, EdgeDetector
+from sudoku_digitalisation.features.sudoku_preprocessing import SudokuPreprocessor
+from sudoku_digitalisation.features.edge_detector import EdgeDetector
+from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
 
 
 class SudokuDatasetHandler:
     """Handles dataset loading, saving, and preprocessing."""
 
-    def __init__(
-            self,
-            preprocessor: SudokuPreprocessor,
-            dataset: DatasetDict=None,
-            preprocessed_dataset: DatasetDict=None,
-            # digits_dataset = None,
-            save_path: str=None
-            ) -> None:
+    def __init__(self,
+                 preprocessor: SudokuPreprocessor,
+                 dataset: DatasetDict=None,
+                 preprocessed_dataset: DatasetDict=None,
+                # digits_dataset = None,
+                save_path: str=None) -> None:
         if save_path is None:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             save_path = os.path.join(os.path.dirname(current_dir), "data")
@@ -26,7 +25,9 @@ class SudokuDatasetHandler:
         self.save_path = save_path
 
     @staticmethod
-    def load_data(preprocessor: SudokuPreprocessor, path: str=None, hugface: bool = False) -> 'SudokuDatasetHandler':
+    def load_data(preprocessor: SudokuPreprocessor,
+                  path: str=None,
+                  hugface: bool = False) -> 'SudokuDatasetHandler':
         if hugface:
             return SudokuDatasetHandler(preprocessor, dataset=load_dataset(path))
         elif path == None:
@@ -92,7 +93,7 @@ class SudokuDatasetHandler:
 
 if __name__ == '__main__':
     edge_detector = EdgeDetector()
-    preprocessor = SudokuPreprocessor(edge_detector=edge_detector, clip_limit=3, output_size=450)
+    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
 
     # handler = SudokuDatasetHandler.load_data(preprocessor, "Lexski/sudoku-image-recognition", hugface=True)
     # handler.save()
