@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from typing import List
+from typing import List, Dict, Any
 
 
 class SudokuSplitter:
@@ -40,14 +40,12 @@ class SudokuSplitter:
                 new_label = SudokuSplitter.change_label(labels[i][j])
                 new_labels.append(new_label)
         return new_labels
-
+    
     @staticmethod
-    def create_digit_ds(ds):
-        """Sets up the datasets which we use for training."""
-        new_ds = []
-        for idx, row in enumerate(ds):
-            digit_images = SudokuSplitter.split_image(row['image'])
-            digit_labels = SudokuSplitter.split_labels(row['cells'])
-            for j in range(len(digit_labels)):
-                new_ds.append({"digit_img": digit_images[j], "label": digit_labels[j], "index": idx})
-        return new_ds
+    def split_datapoint(sudoku: Dict) -> List[Dict[str, Any]]:
+        sudoku_ds = []
+        digit_images = SudokuSplitter.split_image(sudoku['image'])
+        digit_labels = SudokuSplitter.split_labels(sudoku['cells'])
+        for i in range(len(digit_labels)):
+            sudoku_ds.append({"image": digit_images[i], "label": digit_labels[i]})
+        return sudoku_ds
