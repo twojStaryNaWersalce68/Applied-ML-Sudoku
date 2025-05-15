@@ -4,7 +4,8 @@ import cv2
 from PIL import Image, ImageOps
 from tqdm import tqdm
 from collections import Counter
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
+
 
 from sklearn import svm
 from sklearn.model_selection import train_test_split
@@ -90,6 +91,15 @@ def hough_transform(ds):
     ds['image'] = Image.fromarray(image)
     return ds
 
+def normalize_image(ds):
+    """
+    Normalizes the image to be between 0 and 1.
+    """
+    image = np.array(ds['image'])
+    image = image / 255.0
+    ds['image'] = Image.fromarray((image * 255).astype(np.uint8))
+    return ds
+
 def split_image(ds):
     """
     Splits the image into 81 cells.
@@ -122,12 +132,18 @@ def preprocess_dataset(ds_dict):
 
 
 if __name__ == '__main__':
-    dataset_dict = load_data("Lexski/sudoku-image-recognition")
-    ds_dict = preprocess_dataset(dataset_dict)
+    
+    # dataset_dict = load_data("Lexski/sudoku-image-recognition")
+    # dataset_dict.save_to_disk('sudoku_digitalisation/data')
 
-    # Show one of the cells
-    sample_cell = ds_dict['train'][0]['cells'][0]
-    show_image(sample_cell)
+    dataset_dict = load_from_disk('sudoku_digitalisation/data')
+
+    dataset_dict = preprocess_dataset(dataset_dict)
+
+
+    # # Show one of the cells
+    # sample_cell = ds_dict['train'][0]['cells'][0]
+    # show_image(sample_cell)
 
     # To be implemented: cell images matched with labels
 
