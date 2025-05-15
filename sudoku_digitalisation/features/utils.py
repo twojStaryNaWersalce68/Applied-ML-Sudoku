@@ -33,7 +33,7 @@ class SudokuPreprocessor:
 
         image = np.array(image)
         pers_transform_matrix = cv2.getPerspectiveTransform(bounding_box, desired_corner_points)
-        warped_image = cv2.warpPerspective(image, pers_transform_matrix, output_size)
+        warped_image = cv2.warpPerspective(image, pers_transform_matrix, self.output_size)
 
         return Image.fromarray(warped_image)
 

@@ -10,6 +10,7 @@ class SudokuDatasetHandler:
 
     def __init__(
             self,
+            preprocessor: SudokuPreprocessor,
             dataset: DatasetDict=None,
             preprocessed_dataset: DatasetDict=None,
             # digits_dataset = None,
@@ -18,7 +19,7 @@ class SudokuDatasetHandler:
         if save_path is None:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             save_path = os.path.join(os.path.dirname(current_dir), "data")
-        self.preprocessor = SudokuPreprocessor(3, 450)
+        self.preprocessor = preprocessor
         self.dataset = dataset
         self.preprocessed_dataset = preprocessed_dataset
         # self.digits_dataset = digits_dataset
@@ -27,7 +28,7 @@ class SudokuDatasetHandler:
     @staticmethod
     def load_data(preprocessor: SudokuPreprocessor, path: str=None, hugface: bool = False) -> 'SudokuDatasetHandler':
         if hugface:
-            return SudokuDatasetHandler(dataset=load_dataset(path))
+            return SudokuDatasetHandler(preprocessor, dataset=load_dataset(path))
         elif path == None:
             current = os.path.dirname(os.path.abspath(__file__))
             path = os.path.join(os.path.dirname(current), "data")
@@ -38,7 +39,7 @@ class SudokuDatasetHandler:
         prepro_dataset = load_from_disk(prepro_path, keep_in_memory=True) if os.path.exists(prepro_path) else None
         # digits_dataset = load_from_disk(digits_path, keep_in_memory=True) if os.path.exists(digits_path) else None
         if dataset is not None or prepro_dataset is not None: # or digits_dataset is not None
-            return SudokuDatasetHandler(dataset, prepro_dataset) # digits_dataset
+            return SudokuDatasetHandler(preprocessor, dataset, prepro_dataset) # digits_dataset
         else:
             return ValueError("No dataset found to load.")
 
@@ -58,7 +59,7 @@ class SudokuDatasetHandler:
             raise RuntimeError("No dataset loaded for preprocessing.")
         ds = DatasetDict({split: dataset for split, dataset in self.dataset.items()})
         for split in ds:
-            ds[split] = ds[split].map(self.preprocessor.preprocess_ds)
+            ds[split] = ds[split].map(self.preprocessor.preprocess_ds, num_proc=1)
         self.preprocessed_dataset = ds
         return ds
 
@@ -93,13 +94,12 @@ if __name__ == '__main__':
     edge_detector = EdgeDetector()
     preprocessor = SudokuPreprocessor(edge_detector=edge_detector, clip_limit=3, output_size=450)
 
-    # handler = SudokuDatasetHandler.load_data("Lexski/sudoku-image-recognition", preprocessor, True)
+    # handler = SudokuDatasetHandler.load_data(preprocessor, "Lexski/sudoku-image-recognition", hugface=True)
     # handler.save()
 
     handler = SudokuDatasetHandler.load_data(preprocessor)
 
-    handler.preprocess_dataset()
-    handler.save()
+    # handler.preprocess_dataset()
+    # handler.save()
 
     handler.show_images('train', 29)
-    handler.dataset['train'][0]['image'].show()

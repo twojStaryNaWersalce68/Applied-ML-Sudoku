@@ -56,9 +56,9 @@ class SudokuPreprocessor:
     def preprocess_image(self, image: Image.Image, keypoints: np.ndarray=None) -> Image.Image:
         grayscale = self._convert_to_grayscale(image)
         clahe_img = self._apply_clahe(grayscale)
-        # bbox = self.edge_detector.get_bounding_box(clahe_img, keypoints)
-        # cropped_img = self.crop_to_bounding_box(clahe_img, bbox)
-        return clahe_img
+        bbox = self.edge_detector.get_bounding_box(clahe_img, keypoints)
+        cropped_img = self.crop_to_bounding_box(clahe_img, bbox)
+        return cropped_img
 
     def preprocess_ds(self, ds: Dataset) -> Dataset:
         image = self.preprocess_image(ds['image'], ds['keypoints'])
