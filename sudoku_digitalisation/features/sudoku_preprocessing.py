@@ -14,10 +14,11 @@ class SudokuPreprocessor:
     Handles full preprocessing tasks for single objects.
     """    
     def __init__(self,
-                 # ADD EDGE DETECTOR ATTRIBUTES WHEN NECESSARY
+                 t_lower: int,
+                 t_upper: int,
                  clip_limit: int = 3,
                  output_size: int = 450) -> None:
-        self.edge_detector = EdgeDetector()
+        self.edge_detector = EdgeDetector(t_lower, t_upper)
         self.converter = ImageConverter(clip_limit)
         self.cropper = ImageCropper(output_size)
 
@@ -55,12 +56,13 @@ class DatasetPreprocessor(SudokuPreprocessor):
     Handles full preprocessing tasks for datasets and splits.
     """
     def __init__(self,
-                 # ADD EDGE DETECTOR ATTRIBTUES HERE
                  handler: DatasetHandler,
+                 t_lower: int,
+                 t_upper: int,
                  clip_limit: int = 3, 
                  output_size: int = 450) -> None:
         self.handler = handler
-        super().__init__(clip_limit, output_size)
+        super().__init__(t_lower, t_upper, clip_limit, output_size)
         
     def split_preprocessing(self, split: str) -> Tuple[Dataset, Dataset]:
         preprocessed_list = []
@@ -98,17 +100,24 @@ if __name__ == '__main__':
     # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # loads from huggingface
     # handler.save()
 
-    handler = load_sudoku_dataset() # loads a dataset, locally if hugface=False (default)
-    image = handler.dataset['train']['image'][29]
+    handler = load_sudoku_dataset() # loads all saved datasets at path, locally if hugface=False (default)
+    preprocessor = DatasetPreprocessor(handler, t_lower=50, t_upper=150, clip_limit=3, output_size=450)
 
-    
-    preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=450)
-    preprocessor.handler.save() # saves all datasets in the handler locally,
-                                # if no path is specified it is in sudoku_digitalisation/data
+    test_img = preprocessor.handler.dataset['train']['image'][1]
+    clahe_img = preprocessor.converter.apply_clahe(test_img)
+    clahe_img.show()
+    bbox = preprocessor.edge_detector.get_bounding_box(clahe_img)
+    print(bbox)
+    cropped_img = preprocessor.cropper.crop_to_box(clahe_img, bbox)
+    cropped_img.show()
+
+    # full preprocessing can be applied on images as well (REQUIRES EDGE DETECTION IMPLEMENTED)
+    _, digits_list = preprocessor.sudoku_preprocessing(test_img)
 
     _, test_digits = preprocessor.split_preprocessing('test') # only preprocesses a single split
     _, dataset_digits = preprocessor.dataset_preprocessing() # preprocesses whole dataset, also saves output to handler
-    preprocessor.handler.save()
+    preprocessor.handler.save() # saves all datasets in the handler locally,
+                                # if no path is specified it is in sudoku_digitalisation/data
 
     print(preprocessor.handler.dataset) # raw dataset
     print(preprocessor.handler.preprocessed_dataset) # preprocessed dataset
@@ -120,15 +129,9 @@ if __name__ == '__main__':
     preprocessor.handler.show_preprocessed_image(split, index)
     preprocessor.handler.show_digits_images(split, index)
 
-    test_handler = load_sudoku_dataset()
-    test_img = test_handler.dataset['train']['image'][0]
-
-    # full preprocessing can be applied on images as well (REQUIRES EDGE DETECTION IMPLEMENTED)
-    _, digits_list = preprocessor.sudoku_preprocessing(test_img)
-
     # all individual functions can be accessed through the preprocessor
     preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
     gray_img = preprocessor.converter.to_grayscale(test_img)
     clahe_img = preprocessor.converter.apply_clahe(gray_img)
     bbox = preprocessor.edge_detector.get_bounding_box(clahe_img)
-    unlabeled_image = preprocessor.cropper.crop_to_box(clahe_img, bbox)
+    preprocessed_image = preprocessor.cropper.crop_to_box(clahe_img, bbox)
