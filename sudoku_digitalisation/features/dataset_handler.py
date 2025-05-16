@@ -1,15 +1,13 @@
 import matplotlib.pyplot as plt
 import os
-from datasets import load_dataset, load_from_disk, DatasetDict, Dataset
-from typing import Tuple
-from tqdm import tqdm
-from sudoku_digitalisation.features.sudoku_preprocessing import SudokuPreprocessor
+from datasets import load_dataset, load_from_disk, DatasetDict
+from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
 
 
-def load_sudoku_dataset(preprocessor, path=None, hugface=False) -> 'SudokuDatasetHandler':
+def load_sudoku_dataset(preprocessor, path=None, hugface=False) -> 'DatasetHandler':
     if hugface:
         dataset = load_dataset(path)
-        return SudokuDatasetHandler(preprocessor, dataset=dataset)
+        return DatasetHandler(preprocessor, dataset=dataset)
 
     path = path if path is not None else r"sudoku_digitalisation\data"
     raw_path = os.path.join(path, "raw")
@@ -21,15 +19,15 @@ def load_sudoku_dataset(preprocessor, path=None, hugface=False) -> 'SudokuDatase
     digits_dataset = load_from_disk(digits_path, keep_in_memory=True) if os.path.exists(digits_path) else None
 
     if any([dataset, prepro_dataset, digits_dataset]):
-        return SudokuDatasetHandler(preprocessor, dataset, prepro_dataset, digits_dataset)
+        return DatasetHandler(preprocessor, dataset, prepro_dataset, digits_dataset)
     raise FileNotFoundError("No dataset found to load.")
 
 
-class SudokuDatasetHandler:
+class DatasetHandler:
     """Handles dataset managing."""
 
     def __init__(self,
-                 preprocessor: SudokuPreprocessor,
+                 preprocessor: DatasetPreprocessor,
                  dataset: DatasetDict=None,
                  preprocessed_dataset: DatasetDict=None,
                  digits_dataset: DatasetDict = None,
@@ -96,10 +94,10 @@ class SudokuDatasetHandler:
 # python -m sudoku_digitalisation.features.dataset_handler
 
 if __name__ == '__main__':
-    # handler = load_sudoku_dataset(SudokuPreprocessor(clip_limit=3, output_size=450), "Lexski/sudoku-image-recognition", hugface=True)
+    # handler = load_sudoku_dataset(DatasetPreprocessor(clip_limit=3, output_size=450), "Lexski/sudoku-image-recognition", hugface=True)
     # handler.save()
 
-    handler = load_sudoku_dataset(SudokuPreprocessor(clip_limit=3, output_size=450))
+    handler = load_sudoku_dataset(DatasetPreprocessor(clip_limit=3, output_size=450))
 
     handler.full_preprocessing()
     handler.save()
@@ -116,3 +114,9 @@ if __name__ == '__main__':
     print(handler.dataset)
     print(handler.preprocessed_dataset)
     print(handler.digits_dataset)
+
+    preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
+    gray_img = preprocessor.converter.to_grayscale(unlabeled_image)
+    clahe_img = preprocessor.converter.apply_clahe(gray_img)
+    bbox = preprocessor.edge_detector.get_bounding_box(clahe_img)
+    unlabeled_image = preprocessor.cropper.crop_to_box(clahe_img, bbox)

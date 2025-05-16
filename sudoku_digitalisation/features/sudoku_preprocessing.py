@@ -10,7 +10,7 @@ from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
 
 class SudokuPreprocessor:
     """
-    Handles full sudoku preprocessing tasks.
+    Handles full preprocessing tasks for single objects.
     """    
     def __init__(self,
                  # ADD EDGE DETECTOR ATTRIBUTES WHEN NECESSARY
@@ -23,12 +23,11 @@ class SudokuPreprocessor:
     def preprocess_image(self, image: Image.Image, keypoints: np.ndarray=None) -> Image.Image:
         clahe_img = self.converter.apply_clahe(image)
         bbox = self.edge_detector.get_bounding_box(clahe_img, keypoints)
-        cropped_img = self.cropper.crop_to_box(clahe_img, bbox)
-        return cropped_img
+        return self.cropper.crop_to_box(clahe_img, bbox)
 
     def preprocess_datapoint(self, dp: Dict[str, Any]) -> Dict[str, Any]:
-        image = self.preprocess_image(dp['image'], dp['keypoints'])
-        dp['image'] = image
+        dp = dp.copy()
+        dp['image'] = self.preprocess_image(dp['image'], dp['keypoints'])
         return dp
     
     def split_image(self, sudoku: Image.Image):
@@ -48,6 +47,17 @@ class SudokuPreprocessor:
             return preprocessed_dp, labeled_digit_list
         else:
             raise TypeError("Input must be a PIL.Image.Image or a dataset dictionary with an 'image' field.")
+        
+
+class DatasetPreprocessor(SudokuPreprocessor):
+    """
+    Handles full preprocessing tasks for datasets and splits.
+    """
+    def __init__(self,
+                 # ADD EDGE DETECTOR ATTRIBTUES HERE
+                 clip_limit: int = 3, 
+                 output_size: int = 450) -> None:
+        super().__init__(clip_limit, output_size)
         
     def split_preprocessing(self, split: str, dataset: Dataset) -> Tuple[Dataset, Dataset]:
         preprocessed_list = []
