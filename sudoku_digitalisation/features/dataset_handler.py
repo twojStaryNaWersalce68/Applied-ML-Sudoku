@@ -35,7 +35,9 @@ class DatasetHandler:
         self.digits_dataset = digits_dataset
         self.save_path = save_path if save_path is not None else r"sudoku_digitalisation\data"
 
-    def save(self) -> None:
+    def save(self, path: str=None) -> None:
+        if path is not None:
+            self.save_path = path
         if self.dataset:
             raw_path = os.path.join(self.save_path, "raw")
             self.dataset.save_to_disk(raw_path)

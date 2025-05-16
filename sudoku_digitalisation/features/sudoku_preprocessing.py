@@ -95,15 +95,22 @@ class DatasetPreprocessor(SudokuPreprocessor):
 # python -m sudoku_digitalisation.features.sudoku_preprocessing
 
 if __name__ == '__main__':
-    # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # FROM HUGGINGFACE
+    # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # loads from huggingface
     # handler.save()
 
-    preprocessor = DatasetPreprocessor(load_sudoku_dataset(), clip_limit=3, output_size=450)
-    preprocessor.handler.save()
+    handler = load_sudoku_dataset() # loads a dataset, locally if hugface=False (default)
+    handler.digits_dataset['train']['image'][2350].show()
+    preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=450)
+    preprocessor.handler.save() # saves all datasets in the handler locally,
+                                # if no path is specified it is in sudoku_digitalisation/data
 
-    _, train_digits = preprocessor.split_preprocessing('test') # only preprocesses a single split
+    _, test_digits = preprocessor.split_preprocessing('test') # only preprocesses a single split
     _, dataset_digits = preprocessor.dataset_preprocessing() # preprocesses whole dataset, also saves output to handler
     preprocessor.handler.save()
+
+    print(preprocessor.handler.dataset) # raw dataset
+    print(preprocessor.handler.preprocessed_dataset) # preprocessed dataset
+    print(preprocessor.handler.digits_dataset) # single digits dataset
 
     split = 'train'
     index = 29
@@ -114,8 +121,10 @@ if __name__ == '__main__':
     test_handler = load_sudoku_dataset()
     test_img = test_handler.dataset['train']['image'][0]
 
-    _, digits_list = preprocessor.sudoku_preprocessing(test_img) # FOR SINGLE SUDOKU IMAGE, NEEDS EDGE DETECTION
+    # full preprocessing can be applied on images as well (REQUIRES EDGE DETECTION IMPLEMENTED)
+    _, digits_list = preprocessor.sudoku_preprocessing(test_img)
 
+    # all individual functions can be accessed through the preprocessor
     preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
     gray_img = preprocessor.converter.to_grayscale(test_img)
     clahe_img = preprocessor.converter.apply_clahe(gray_img)

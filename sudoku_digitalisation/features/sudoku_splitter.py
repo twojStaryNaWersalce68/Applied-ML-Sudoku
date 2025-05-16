@@ -6,9 +6,7 @@ from typing import List, Dict, Any
 class SudokuSplitter:
     @staticmethod
     def split_image(image: Image.Image) -> List[Image.Image]:
-        """
-        Splits the image into 81 cells.
-        """
+        """Splits the image into 81 cells."""
         image = np.array(image)
         cells = []
         cell_size = (image.shape[0] // 9, image.shape[1] // 9)
@@ -23,7 +21,7 @@ class SudokuSplitter:
         return cells
     
     @staticmethod
-    def change_label(label: np.ndarray) -> int:
+    def get_digit(label: np.ndarray) -> int:
         """Changes the label of a single cell from binary representation to the simple integer."""
         label[0] = abs(label[0] - 1)  # changes 0 to 1 and 1 to 0, such that below if the cell is unsolved it returns 0
         for idx, item in enumerate(label):
@@ -37,7 +35,7 @@ class SudokuSplitter:
         new_labels = []
         for i in range(9):
             for j in range(9):
-                new_label = SudokuSplitter.change_label(labels[i][j])
+                new_label = SudokuSplitter.get_digit(labels[i][j])
                 new_labels.append(new_label)
         return new_labels
     
