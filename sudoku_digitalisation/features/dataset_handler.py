@@ -1,13 +1,12 @@
 import matplotlib.pyplot as plt
 import os
 from datasets import load_dataset, load_from_disk, DatasetDict
-from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
 
 
-def load_sudoku_dataset(preprocessor, path=None, hugface=False) -> 'DatasetHandler':
+def load_sudoku_dataset(path=None, hugface=False) -> 'DatasetHandler':
     if hugface:
         dataset = load_dataset(path)
-        return DatasetHandler(preprocessor, dataset=dataset)
+        return DatasetHandler(dataset=dataset)
 
     path = path if path is not None else r"sudoku_digitalisation\data"
     raw_path = os.path.join(path, "raw")
@@ -19,7 +18,7 @@ def load_sudoku_dataset(preprocessor, path=None, hugface=False) -> 'DatasetHandl
     digits_dataset = load_from_disk(digits_path, keep_in_memory=True) if os.path.exists(digits_path) else None
 
     if any([dataset, prepro_dataset, digits_dataset]):
-        return DatasetHandler(preprocessor, dataset, prepro_dataset, digits_dataset)
+        return DatasetHandler(dataset, prepro_dataset, digits_dataset)
     raise FileNotFoundError("No dataset found to load.")
 
 
@@ -27,12 +26,10 @@ class DatasetHandler:
     """Handles dataset managing."""
 
     def __init__(self,
-                 preprocessor: DatasetPreprocessor,
                  dataset: DatasetDict=None,
                  preprocessed_dataset: DatasetDict=None,
                  digits_dataset: DatasetDict = None,
                  save_path: str=None) -> None:
-        self.preprocessor = preprocessor
         self.dataset = dataset
         self.preprocessed_dataset = preprocessed_dataset
         self.digits_dataset = digits_dataset
@@ -49,20 +46,11 @@ class DatasetHandler:
             digits_path = os.path.join(self.save_path, "digits")
             self.digits_dataset.save_to_disk(digits_path)
 
-    def full_preprocessing(self) -> None:
-        pre, digits = self.preprocessor.dataset_preprocessing(self.dataset)
-        self.preprocessed_dataset, self.digits_dataset = pre, digits
-
-    # RESHAPE DATASET FOR CNN
-
-    # RESHAPE DATASET FOR SVM
-
     def show_raw_image(self, split: str, index: int):
         if self.dataset is None:
             raise RuntimeError("Raw dataset not loaded.")
         image = self.dataset[split][index]['image']
         plt.imshow(image, cmap='gray')
-        plt.title("Raw Image")
         plt.show()
 
     def show_preprocessed_image(self, split: str, index: int):
@@ -70,7 +58,6 @@ class DatasetHandler:
             raise RuntimeError("Preprocessed dataset not loaded.")
         image = self.preprocessed_dataset[split][index]['image']
         plt.imshow(image, cmap='gray')
-        plt.title("Preprocessed Image")
         plt.show()
 
     def show_digits_images(self, split: str, index: int):
@@ -82,41 +69,4 @@ class DatasetHandler:
             image = self.digits_dataset[split][index * 81 + i]['image']
             ax.imshow(image, cmap='gray')
             ax.axis('off')
-        plt.suptitle(f"Digits from sudoku index {index}")
         plt.show()
-
-
-#####################
-### USAGE EXAMPLE ###
-#####################
-
-# If you get a ModuleNotFoundError, run:
-# python -m sudoku_digitalisation.features.dataset_handler
-
-if __name__ == '__main__':
-    # handler = load_sudoku_dataset(DatasetPreprocessor(clip_limit=3, output_size=450), "Lexski/sudoku-image-recognition", hugface=True)
-    # handler.save()
-
-    handler = load_sudoku_dataset(DatasetPreprocessor(clip_limit=3, output_size=450))
-
-    handler.full_preprocessing()
-    handler.save()
-
-    split = 'train'
-    index = 29
-    handler.show_raw_image(split, index)
-    handler.show_preprocessed_image(split, index)
-    handler.show_digits_images(split, index)
-
-    unlabeled_image = handler.dataset['test']['image'][0]
-    _, digits_list = handler.preprocessor.sudoku_preprocessing(unlabeled_image) # NEEDS EDGE DETECTION
-
-    print(handler.dataset)
-    print(handler.preprocessed_dataset)
-    print(handler.digits_dataset)
-
-    preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
-    gray_img = preprocessor.converter.to_grayscale(unlabeled_image)
-    clahe_img = preprocessor.converter.apply_clahe(gray_img)
-    bbox = preprocessor.edge_detector.get_bounding_box(clahe_img)
-    unlabeled_image = preprocessor.cropper.crop_to_box(clahe_img, bbox)

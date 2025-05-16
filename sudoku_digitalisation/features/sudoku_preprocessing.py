@@ -6,6 +6,7 @@ from typing import Dict, Tuple, Union, Any
 from sudoku_digitalisation.features.image_operations import ImageConverter, ImageCropper
 from sudoku_digitalisation.features.edge_detector import EdgeDetector
 from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
+from sudoku_digitalisation.features.dataset_handler import DatasetHandler, load_sudoku_dataset
 
 
 class SudokuPreprocessor:
@@ -39,11 +40,11 @@ class SudokuPreprocessor:
     def sudoku_preprocessing(self, sudoku: Union[Image.Image, Dict[str, Any]]) -> Tuple[Any, Any]:
         if isinstance(sudoku, Image.Image):
             preprocessed_img = self.preprocess_image(sudoku)
-            digit_list = self.split_image(sudoku)
+            digit_list = self.split_image(preprocessed_img)
             return preprocessed_img, digit_list
         elif isinstance(sudoku, dict):
             preprocessed_dp = self.preprocess_datapoint(sudoku)
-            labeled_digit_list = self.split_datapoint(sudoku)
+            labeled_digit_list = self.split_datapoint(preprocessed_dp)
             return preprocessed_dp, labeled_digit_list
         else:
             raise TypeError("Input must be a PIL.Image.Image or a dataset dictionary with an 'image' field.")
@@ -55,24 +56,68 @@ class DatasetPreprocessor(SudokuPreprocessor):
     """
     def __init__(self,
                  # ADD EDGE DETECTOR ATTRIBTUES HERE
+                 handler: DatasetHandler,
                  clip_limit: int = 3, 
                  output_size: int = 450) -> None:
+        self.handler = handler
         super().__init__(clip_limit, output_size)
         
-    def split_preprocessing(self, split: str, dataset: Dataset) -> Tuple[Dataset, Dataset]:
+    def split_preprocessing(self, split: str) -> Tuple[Dataset, Dataset]:
         preprocessed_list = []
         digits_list = []
-        for datapoint in tqdm(dataset, desc=f"Preprocessing {split} split"):
+        for datapoint in tqdm(self.handler.dataset[split], desc=f"Preprocessing {split} split"):
             preprocessed_dp, digits_dict_list = self.sudoku_preprocessing(datapoint)
             preprocessed_list.append(preprocessed_dp)
             digits_list.extend(digits_dict_list)
         return Dataset.from_list(preprocessed_list), Dataset.from_list(digits_list)
 
-    def dataset_preprocessing(self, dataset: DatasetDict):
+    def dataset_preprocessing(self) -> Tuple[DatasetDict, DatasetDict]:
         preprocessed_datasets = {}
         digits_datasets = {}
-        for split in dataset:
-            preprocessed_ds, digits_ds = self.split_preprocessing(split, dataset[split])
+        for split in self.handler.dataset:
+            preprocessed_ds, digits_ds = self.split_preprocessing(split)
             preprocessed_datasets[split] = preprocessed_ds
             digits_datasets[split] = digits_ds
-        return DatasetDict(preprocessed_datasets), DatasetDict(digits_datasets)
+        self.handler.preprocessed_dataset = DatasetDict(preprocessed_datasets)
+        self.handler.digits_dataset = DatasetDict(digits_datasets)
+        return self.handler.preprocessed_dataset, self.handler.digits_dataset
+    
+    # RESHAPE DATASET FOR CNN
+
+    # RESHAPE DATASET FOR SVM
+
+
+################
+### SHOWCASE ###
+################
+
+# If you get a ModuleNotFoundError, run:
+# python -m sudoku_digitalisation.features.sudoku_preprocessing
+
+if __name__ == '__main__':
+    # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # FROM HUGGINGFACE
+    # handler.save()
+
+    preprocessor = DatasetPreprocessor(load_sudoku_dataset(), clip_limit=3, output_size=450)
+    preprocessor.handler.save()
+
+    _, train_digits = preprocessor.split_preprocessing('test') # only preprocesses a single split
+    _, dataset_digits = preprocessor.dataset_preprocessing() # preprocesses whole dataset, also saves output to handler
+    preprocessor.handler.save()
+
+    split = 'train'
+    index = 29
+    preprocessor.handler.show_raw_image(split, index)
+    preprocessor.handler.show_preprocessed_image(split, index)
+    preprocessor.handler.show_digits_images(split, index)
+
+    test_handler = load_sudoku_dataset()
+    test_img = test_handler.dataset['train']['image'][0]
+
+    _, digits_list = preprocessor.sudoku_preprocessing(test_img) # FOR SINGLE SUDOKU IMAGE, NEEDS EDGE DETECTION
+
+    preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
+    gray_img = preprocessor.converter.to_grayscale(test_img)
+    clahe_img = preprocessor.converter.apply_clahe(gray_img)
+    bbox = preprocessor.edge_detector.get_bounding_box(clahe_img)
+    unlabeled_image = preprocessor.cropper.crop_to_box(clahe_img, bbox)
