@@ -31,20 +31,14 @@ class SudokuPreprocessor:
         dp['image'] = self.preprocess_image(dp['image'], dp['keypoints'])
         return dp
     
-    def split_image(self, sudoku: Image.Image):
-        return SudokuSplitter.split_image(sudoku)
-    
-    def split_datapoint(self, datapoint: Dict[str, Any]):
-        return SudokuSplitter.split_datapoint(datapoint)
-    
     def sudoku_preprocessing(self, sudoku: Union[Image.Image, Dict[str, Any]]) -> Tuple[Any, Any]:
         if isinstance(sudoku, Image.Image):
             preprocessed_img = self.preprocess_image(sudoku)
-            digit_list = self.split_image(preprocessed_img)
+            digit_list = SudokuSplitter.split_image(preprocessed_img)
             return preprocessed_img, digit_list
         elif isinstance(sudoku, dict):
             preprocessed_dp = self.preprocess_datapoint(sudoku)
-            labeled_digit_list = self.split_datapoint(preprocessed_dp)
+            labeled_digit_list = SudokuSplitter.split_datapoint(preprocessed_dp)
             return preprocessed_dp, labeled_digit_list
         else:
             raise TypeError("Input must be a PIL.Image.Image or a dataset dictionary with an 'image' field.")
@@ -96,19 +90,20 @@ class DatasetPreprocessor(SudokuPreprocessor):
 
 if __name__ == '__main__':
     # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # loads from huggingface
-    # handler.save()
+    # # saves a specified locally, if no path is specified it is in sudoku_digitalisation/data/datasets
+    # preprocessor.handler.save_dataset('raw')
 
     # loads a dataset, locally if hugface=False (default)
     handler = load_sudoku_dataset()
     # creating an instance of DatasetPreprocessor
     preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=450)
-    # saves all datasets in the handler locally, if no path is specified it is in sudoku_digitalisation/data
+    # saves all datasets locally, if no path is specified it is in sudoku_digitalisation/data/datasets
     preprocessor.handler.save_all_datasets()
 
     # only preprocesses a single split from raw dataset
-    _, test_digits = preprocessor.split_preprocessing('test')
+    test_preprocessed, test_digits = preprocessor.split_preprocessing('test')
     # preprocesses whole raw dataset, also saves preprocessed and digits dataset to handler
-    _, dataset_digits = preprocessor.dataset_preprocessing()
+    preprocessed_dataset, digits_dataset = preprocessor.dataset_preprocessing()
     preprocessor.handler.save_all_datasets()
 
     print(preprocessor.handler.datasets['raw']) # raw dataset
