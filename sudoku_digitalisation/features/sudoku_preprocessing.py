@@ -99,7 +99,6 @@ if __name__ == '__main__':
     # handler.save()
 
     handler = load_sudoku_dataset() # loads a dataset, locally if hugface=False (default)
-    handler.digits_dataset['train']['image'][2350].show()
     preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=450)
     preprocessor.handler.save() # saves all datasets in the handler locally,
                                 # if no path is specified it is in sudoku_digitalisation/data
