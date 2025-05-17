@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import os
+from tqdm import tqdm
 from datasets import load_dataset, load_from_disk, DatasetDict
+from sudoku_digitalisation.features.image_operations import save_image
 
 
 def load_sudoku_dataset(path=None, hugface=False) -> 'DatasetHandler':
@@ -8,7 +10,9 @@ def load_sudoku_dataset(path=None, hugface=False) -> 'DatasetHandler':
         dataset = load_dataset(path)
         return DatasetHandler(dataset=dataset)
 
-    path = path if path is not None else os.path.join("sudoku_digitalisation", "data")
+    path = path if path is not None else os.path.join(
+        "sudoku_digitalisation", "data", "datasets"
+        )
     raw_path = os.path.join(path, "raw")
     prepro_path = os.path.join(path, "preprocessed")
     digits_path = os.path.join(path, "digits")
@@ -30,45 +34,43 @@ class DatasetHandler:
                  preprocessed_dataset: DatasetDict=None,
                  digits_dataset: DatasetDict = None,
                  save_path: str=None) -> None:
-        self.dataset = dataset
-        self.preprocessed_dataset = preprocessed_dataset
-        self.digits_dataset = digits_dataset
-        self.save_path = save_path if save_path is not None else os.path.join("sudoku_digitalisation", "data")
+        self.datasets = {
+            "raw": dataset,
+            "preprocessed": preprocessed_dataset,
+            "digits": digits_dataset
+        }
+        self.save_path = save_path if save_path is not None else os.path.join(
+            "sudoku_digitalisation", "data", "datasets"
+            )
 
-    def save(self, path: str=None) -> None:
+    def save_dataset(self, type: str, path: str = None) -> None:
         if path is not None:
             self.save_path = path
-        if self.dataset:
-            raw_path = os.path.join(self.save_path, "raw")
-            self.dataset.save_to_disk(raw_path)
-        if self.preprocessed_dataset:
-            preprocessed_path = os.path.join(self.save_path, "preprocessed")
-            self.preprocessed_dataset.save_to_disk(preprocessed_path)
-        if self.digits_dataset:
-            digits_path = os.path.join(self.save_path, "digits")
-            self.digits_dataset.save_to_disk(digits_path)
+        dataset = self.datasets[type]
+        if dataset:
+                dataset.save_to_disk(os.path.join(self.save_path, type))
 
-    def show_raw_image(self, split: str, index: int):
-        if self.dataset is None:
-            raise RuntimeError("Raw dataset not loaded.")
-        image = self.dataset[split][index]['image']
+    def save_all_datasets(self, path: str = None) -> None:
+        if path is not None:
+            self.save_path = path
+        for name in self.datasets:
+            self.save_dataset(name, path)
+
+    def save_split_png(self, type: str, split: str) -> None:
+        dataset = self.datasets[type]
+        for idx, datapoint in enumerate(tqdm(dataset[split], desc=f"Saving {split} split as png")):
+            filename = f"{split}_{idx:05}.png"
+            save_image(datapoint["image"], os.path.join(type, split), filename)
+
+    def save_dataset_png(self, type: str) -> None:
+        dataset = self.datasets[type]
+        for split in dataset:
+            self.save_split_png(type, split)
+
+    def show_image(self, type: str, split: str, index: int):
+        dataset = self.datasets[type]
+        if dataset is None:
+            raise RuntimeError(f"{type} dataset not loaded.")
+        image = dataset[split][index]['image']
         plt.imshow(image, cmap='gray')
-        plt.show()
-
-    def show_preprocessed_image(self, split: str, index: int):
-        if self.preprocessed_dataset is None:
-            raise RuntimeError("Preprocessed dataset not loaded.")
-        image = self.preprocessed_dataset[split][index]['image']
-        plt.imshow(image, cmap='gray')
-        plt.show()
-
-    def show_digits_images(self, split: str, index: int):
-        if self.digits_dataset is None:
-            raise RuntimeError("Digits dataset not loaded.")
-        fig, axes = plt.subplots(9, 9, figsize=(8, 8))
-        for i in range(81):
-            ax = axes[i // 9, i % 9]
-            image = self.digits_dataset[split][index * 81 + i]['image']
-            ax.imshow(image, cmap='gray')
-            ax.axis('off')
         plt.show()

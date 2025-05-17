@@ -65,7 +65,7 @@ class DatasetPreprocessor(SudokuPreprocessor):
     def split_preprocessing(self, split: str) -> Tuple[Dataset, Dataset]:
         preprocessed_list = []
         digits_list = []
-        for datapoint in tqdm(self.handler.dataset[split], desc=f"Preprocessing {split} split"):
+        for datapoint in tqdm(self.handler.datasets['raw'][split], desc=f"Preprocessing {split} split"):
             preprocessed_dp, digits_dict_list = self.sudoku_preprocessing(datapoint)
             preprocessed_list.append(preprocessed_dp)
             digits_list.extend(digits_dict_list)
@@ -74,13 +74,13 @@ class DatasetPreprocessor(SudokuPreprocessor):
     def dataset_preprocessing(self) -> Tuple[DatasetDict, DatasetDict]:
         preprocessed_datasets = {}
         digits_datasets = {}
-        for split in self.handler.dataset:
+        for split in self.handler.datasets['raw']:
             preprocessed_ds, digits_ds = self.split_preprocessing(split)
             preprocessed_datasets[split] = preprocessed_ds
             digits_datasets[split] = digits_ds
-        self.handler.preprocessed_dataset = DatasetDict(preprocessed_datasets)
-        self.handler.digits_dataset = DatasetDict(digits_datasets)
-        return self.handler.preprocessed_dataset, self.handler.digits_dataset
+        self.handler.datasets['preprocessed'] = DatasetDict(preprocessed_datasets)
+        self.handler.datasets['digits'] = DatasetDict(digits_datasets)
+        return self.handler.datasets['preprocessed'], self.handler.datasets['digits']
     
     # RESHAPE DATASET FOR CNN
 
@@ -98,28 +98,35 @@ if __name__ == '__main__':
     # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # loads from huggingface
     # handler.save()
 
-    handler = load_sudoku_dataset() # loads a dataset, locally if hugface=False (default)
+    # loads a dataset, locally if hugface=False (default)
+    handler = load_sudoku_dataset()
+    # creating an instance of DatasetPreprocessor
     preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=450)
-    preprocessor.handler.save() # saves all datasets in the handler locally,
-                                # if no path is specified it is in sudoku_digitalisation/data
+    # saves all datasets in the handler locally, if no path is specified it is in sudoku_digitalisation/data
+    preprocessor.handler.save_all_datasets()
 
-    _, test_digits = preprocessor.split_preprocessing('test') # only preprocesses a single split
-    _, dataset_digits = preprocessor.dataset_preprocessing() # preprocesses whole dataset, also saves output to handler
-    preprocessor.handler.save()
+    # only preprocesses a single split from raw dataset
+    _, test_digits = preprocessor.split_preprocessing('test')
+    # preprocesses whole raw dataset, also saves preprocessed and digits dataset to handler
+    _, dataset_digits = preprocessor.dataset_preprocessing()
+    preprocessor.handler.save_all_datasets()
 
-    print(preprocessor.handler.dataset) # raw dataset
-    print(preprocessor.handler.preprocessed_dataset) # preprocessed dataset
-    print(preprocessor.handler.digits_dataset) # single digits dataset
+    print(preprocessor.handler.datasets['raw']) # raw dataset
+    print(preprocessor.handler.datasets['preprocessed']) # preprocessed dataset
+    print(preprocessor.handler.datasets['digits']) # single digits dataset
+
+    # get a single image, without labels or checkpoints
+    test_img = preprocessor.handler.datasets['raw']['train']['image'][0]
+
+    # saves images from as png, can be dataset, split, or single image
+    preprocessor.handler.save_dataset_png('preprocessed')
+    preprocessor.handler.save_split_png('digits', 'test')
 
     split = 'train'
     index = 29
-    preprocessor.handler.show_raw_image(split, index) # image from the raw dataset
-    preprocessor.handler.show_preprocessed_image(split, index) # image from the preprocessed dataset
-    preprocessor.handler.show_digits_images(split, index) # image from the digits dataset
-
-    # get a single image, without labels or checkpoints
-    test_handler = load_sudoku_dataset()
-    test_img = test_handler.dataset['train']['image'][0]
+    preprocessor.handler.show_image('raw', split, index) # image from the raw dataset
+    preprocessor.handler.show_image('preprocessed', split, index) # image from the preprocessed dataset
+    preprocessor.handler.show_image('digits', split, index * 81) # image from the digits dataset
 
     # all individual functions can be accessed through the preprocessor
     preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
