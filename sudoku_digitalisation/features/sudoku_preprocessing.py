@@ -113,15 +113,13 @@ if __name__ == '__main__':
 
     split = 'train'
     index = 29
-    preprocessor.handler.show_raw_image(split, index)
-    preprocessor.handler.show_preprocessed_image(split, index)
-    preprocessor.handler.show_digits_images(split, index)
+    preprocessor.handler.show_raw_image(split, index) # image from the raw dataset
+    preprocessor.handler.show_preprocessed_image(split, index) # image from the preprocessed dataset
+    preprocessor.handler.show_digits_images(split, index) # image from the digits dataset
 
+    # get a single image, without labels or checkpoints
     test_handler = load_sudoku_dataset()
     test_img = test_handler.dataset['train']['image'][0]
-
-    # full preprocessing can be applied on images as well (REQUIRES EDGE DETECTION IMPLEMENTED)
-    _, digits_list = preprocessor.sudoku_preprocessing(test_img)
 
     # all individual functions can be accessed through the preprocessor
     preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
@@ -129,3 +127,7 @@ if __name__ == '__main__':
     clahe_img = preprocessor.converter.apply_clahe(gray_img)
     bbox = preprocessor.edge_detector.get_bounding_box(clahe_img)
     unlabeled_image = preprocessor.cropper.crop_to_box(clahe_img, bbox)
+
+    # THE FOLLOWING CODE WILL NOT WORK WHILE EDGE DETECTION IS NOT IMPLEMENTED
+    # full preprocessing can be applied on images as well
+    _, digits_list = preprocessor.sudoku_preprocessing(test_img)
