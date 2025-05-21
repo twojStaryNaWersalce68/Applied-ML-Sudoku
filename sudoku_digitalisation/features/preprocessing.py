@@ -266,5 +266,4 @@ if __name__ == '__main__':
     plt.show()
 
     # Save the model
-    cnn.save("sudoku_cnn_model.h5")
-    
+    cnn.save('sudoku_cnn_model.keras')
