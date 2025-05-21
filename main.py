@@ -17,6 +17,8 @@ if __name__ == "__main__":
     cnn, history = train_cnn(digit_dataset['train'], digit_dataset['validation'])
     evaluate_cnn(cnn, history, digit_dataset['test'])
 
-    save_path = os.path.join("sudoku_digitalisation", "data", "models")
-    os.makedirs(save_path, exist_ok=True)
+    folder_path = os.path.join("sudoku_digitalisation", "data", "models")
+    os.makedirs(folder_path, exist_ok=True)
+    model_name = "cnn_test.keras"
+    save_path = os.path.join(folder_path, model_name)
     cnn.save(save_path)
