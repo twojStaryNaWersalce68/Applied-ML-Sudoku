@@ -2,39 +2,39 @@ import numpy as np
 import keras
 import matplotlib.pyplot as plt
 import cv2
+from datasets import Dataset
+from typing import Tuple
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+
+def reshape_image(img):
+    arr = np.array(img)
+    resized = cv2.resize(arr, (28, 28), interpolation=cv2.INTER_AREA)
+    return resized
 
 # Preprocessing for CNN
 def make_dataset(img_list):
     N = len(img_list)
     out = np.zeros((N, 28, 28, 1), dtype=np.float32)
     for i, img in enumerate(img_list):
-        arr = np.array(img)
-        resized = cv2.resize(arr, (28, 28), interpolation=cv2.INTER_AREA)
+        resized = reshape_image(img)
         out[i, :, :, 0] = resized.astype(np.float32)
     return out
 
-if __name__ == "__main__":
-
+def train_cnn(train_data: Dataset, val_data: Dataset) -> Tuple[keras.models.Sequential, keras.callbacks.History]:
     ### Convert labels for CNN ###
-    train_labels = np.array(digit_dataset_dict["train"]["label"])
-    val_labels = np.array(digit_dataset_dict["validation"]["label"])
-    test_labels = np.array(digit_dataset_dict["test"]["label"])
+    train_labels = np.array(train_data["label"])
+    val_labels = np.array(val_data["label"])
 
     # grab each split separately
-    train_imgs = digit_dataset_dict["train"]["digit_img"]
-    val_imgs   = digit_dataset_dict["validation"]["digit_img"]
-    test_imgs  = digit_dataset_dict["test"]["digit_img"]
+    train_imgs = train_data["image"]
+    val_imgs   = val_data["image"]
 
     train_images = make_dataset(train_imgs)
     val_images   = make_dataset(val_imgs)
-    test_images  = make_dataset(test_imgs)
-
 
     # One-hot encoding
     train_labels = keras.utils.to_categorical(train_labels, num_classes=10)
     val_labels = keras.utils.to_categorical(val_labels, num_classes=10)
-    test_labels = keras.utils.to_categorical(test_labels, num_classes=10)
 
     # CNN model: 2 conv layers, 2 max pooling layers, 2 dense layers
     cnn = keras.models.Sequential()
@@ -81,10 +81,19 @@ if __name__ == "__main__":
         callbacks=[early_stopping]
     )
 
+    return cnn, history
+
+def evaluate_cnn(cnn: keras.models.Sequential,
+                 history: keras.callbacks.History, 
+                 test_data: Dataset) -> None:
+    
+    test_images = make_dataset(test_data['image'])
+    y_true = np.array(test_data['label'])
+    test_labels = keras.utils.to_categorical(y_true, num_classes=10)
+
     # Convert one-hot encoded data back to normal labels
     y_pred_probs = cnn.predict(test_images)
     y_pred = np.argmax(y_pred_probs, axis=1)
-    y_true = np.argmax(test_labels, axis=1)
 
     # Per class precision, recall and F1
     report = classification_report(y_true, y_pred, target_names=[f'Class {i}' for i in range(10)])
