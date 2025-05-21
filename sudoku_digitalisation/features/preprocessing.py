@@ -1,4 +1,5 @@
 import datasets
+import keras
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -6,9 +7,6 @@ from PIL import Image, ImageOps
 from tqdm import tqdm
 from collections import Counter
 from datasets import load_dataset, DatasetDict, Dataset
-
-import keras
-import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 
 
@@ -137,7 +135,6 @@ def preprocess_dataset(ds_dict):
 
     return ds_dict, digit_ds_dict
 
-
 # Preprocessing for CNN
 def make_dataset(img_list):
     N = len(img_list)
@@ -153,9 +150,8 @@ if __name__ == '__main__':
     dataset_dict = load_data("Lexski/sudoku-image-recognition")
     dataset_dict, digit_dataset_dict = preprocess_dataset(dataset_dict)
     # digit_dataset_dict is what we use for training
-
-
-
+    
+    
     ### Convert labels for CNN ###
     train_labels = np.array(digit_dataset_dict["train"]["label"])
     val_labels = np.array(digit_dataset_dict["validation"]["label"])
