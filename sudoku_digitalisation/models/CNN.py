@@ -1,27 +1,34 @@
 import numpy as np
 import keras
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 
+# Preprocessing for CNN
+def make_dataset(img_list):
+    N = len(img_list)
+    out = np.zeros((N, 28, 28, 1), dtype=np.float32)
+    for i, img in enumerate(img_list):
+        arr = np.array(img)
+        resized = cv2.resize(arr, (28, 28), interpolation=cv2.INTER_AREA)
+        out[i, :, :, 0] = resized.astype(np.float32)
+    return out
 
 if __name__ == "__main__":
-    (train_images, train_labels), (test_images, test_labels) = keras.datasets.fashion_mnist.load_data()
 
-    # Validation split
-    train_images, val_images, train_labels, val_labels = train_test_split(
-        train_images, train_labels, test_size=0.2, random_state=42
-    )
+    ### Convert labels for CNN ###
+    train_labels = np.array(digit_dataset_dict["train"]["label"])
+    val_labels = np.array(digit_dataset_dict["validation"]["label"])
+    test_labels = np.array(digit_dataset_dict["test"]["label"])
 
-    # Scales to [0, 1]
-    train_images = train_images / 255.0
-    test_images = test_images / 255.0
-    val_images = val_images / 255.0
+    # grab each split separately
+    train_imgs = digit_dataset_dict["train"]["digit_img"]
+    val_imgs   = digit_dataset_dict["validation"]["digit_img"]
+    test_imgs  = digit_dataset_dict["test"]["digit_img"]
 
-    # Reshape images to (28, 28, 1) for CNN input
-    train_images = train_images.reshape(-1, 28, 28, 1)
-    val_images = val_images.reshape(-1, 28, 28, 1)
-    test_images = test_images.reshape(-1, 28, 28, 1)
+    train_images = make_dataset(train_imgs)
+    val_images   = make_dataset(val_imgs)
+    test_images  = make_dataset(test_imgs)
+
 
     # One-hot encoding
     train_labels = keras.utils.to_categorical(train_labels, num_classes=10)
@@ -39,10 +46,10 @@ if __name__ == "__main__":
 
     cnn.add(keras.layers.Flatten())
 
-    cnn.add(keras.layers.Dense(filters=128, activation='relu'))
+    cnn.add(keras.layers.Dense(activation='relu', units=128))
     cnn.add(keras.layers.Dropout(0.2))
 
-    cnn.add(keras.layers.Dense(filters=64, activation='relu'))
+    cnn.add(keras.layers.Dense(units=128, activation='relu'))
     cnn.add(keras.layers.Dropout(0.2))
 
     # Output layer
@@ -72,11 +79,6 @@ if __name__ == "__main__":
         validation_data=(val_images, val_labels),
         callbacks=[early_stopping]
     )
-
-    # cnn.save("fashion_mnist_cnn.h5")
-
-    # cnn = keras.models.load_model("fashion_mnist_cnn.h5")
-    # keras.utils.plot_model(cnn, show_dtype=True, show_shapes=True)
 
     # Convert one-hot encoded data back to normal labels
     y_pred_probs = cnn.predict(test_images)
@@ -121,3 +123,4 @@ if __name__ == "__main__":
     plt.legend()
     plt.title('Training vs Validation Loss')
     plt.show()
+    
