@@ -1,6 +1,7 @@
 import numpy as np
 import keras
 import matplotlib.pyplot as plt
+import cv2
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 
 # Preprocessing for CNN
