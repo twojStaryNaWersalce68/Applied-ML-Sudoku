@@ -30,13 +30,14 @@ class SVM():
         Initialise svm as a one versus all SVM
         '''
         # MAYBE ADD THE DIFFERENT SVM PARAMETERS AS ATTRIBUTES?
-        self.svm = svm.SVC(decision_function_shape="ovr")
+        self.svm = svm.LinearSVC(verbose=True)
 
     def train(self, X_train, y_train):
         '''
         Trains svm on X_train matrix and y_train vector
         '''
         X_train = reshape_data_SVM(X_train)
+        print("Training SVM...")
         y_train = np.array(y_train)
         self.svm.fit(X_train, y_train)
 
@@ -54,7 +55,6 @@ class SVM():
         '''
         Evaluates the svm using the passed test data
         '''
-        X_test = reshape_data_SVM(X_test)
         y_test = np.array(y_test)
         y_pred = self.predict(X_test)
 

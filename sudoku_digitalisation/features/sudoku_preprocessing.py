@@ -16,7 +16,7 @@ class SudokuPreprocessor:
     def __init__(self,
                  # ADD EDGE DETECTOR ATTRIBUTES WHEN NECESSARY
                  clip_limit: int = 3,
-                 output_size: int = 450) -> None:
+                 output_size: int = 252) -> None:
         self.edge_detector = EdgeDetector()
         self.converter = ImageConverter(clip_limit)
         self.cropper = ImageCropper(output_size)
