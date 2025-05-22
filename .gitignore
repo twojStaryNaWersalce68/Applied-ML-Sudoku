@@ -4,4 +4,4 @@ __pycache__/
 .DS_Store
 venv/
 .env
-sudoku_digitalisation/data/
+sudoku_digitalisation/data
