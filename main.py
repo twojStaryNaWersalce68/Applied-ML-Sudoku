@@ -27,11 +27,11 @@ if __name__ == "__main__":
 
     sudoku_height = preprocessor.cropper.output_size // 9
 
-    # svm = SVM()
-    # svm.train(X_train[:10000], y_train[:10000])
-    # svm.evaluate(X_test, y_test)
+    svm = SVM()
+    svm.train(X_train[:10000], y_train[:10000])
+    svm.evaluate(X_test, y_test)
 
     cnn = CNN(input_shape=(sudoku_height, sudoku_height, 1), num_classes=10)
-    cnn.train(X_train, y_train, X_val, y_val)
+    cnn.train(X_train, y_train, X_val, y_val, verbose=1)
     cnn.evaluate(X_test, y_test)
     cnn.save("test")

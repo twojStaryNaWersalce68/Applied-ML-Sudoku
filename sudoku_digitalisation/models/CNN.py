@@ -3,11 +3,16 @@ import keras
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+from typing import Tuple, List, Union
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 
 
 class CNN:
-    def __init__(self, input_shape=(28, 28, 1), num_classes=10):
+    def __init__(
+            self,
+            input_shape: Tuple[int, int, int] = (28, 28, 1), 
+            num_classes: int = 10
+            ) -> None:
         '''
         Initialize CNN with given parameters
         '''
@@ -49,7 +54,7 @@ class CNN:
         )
         return cnn
     
-    def _reshape_image_CNN(self, img):
+    def _reshape_image_CNN(self, img: Image.Image) -> np.ndarray:
         '''
         Reshapes single image to match input shape
         '''
@@ -57,7 +62,7 @@ class CNN:
         normalized_array = img_array.astype(np.float32) / 255.0
         return normalized_array.reshape(self.input_shape[0], self.input_shape[1], 1)
 
-    def _reshape_data_CNN(self, image_list):
+    def _reshape_data_CNN(self, image_list: List[Image.Image]) -> np.ndarray:
         '''
         Reshapes a list of images to match input shape
         '''
@@ -68,7 +73,14 @@ class CNN:
             reshaped_data[i] = self._reshape_image_CNN(img)
         return reshaped_data
     
-    def train(self, X_train, y_train, X_val, y_val):
+    def train(
+            self,
+            X_train: List[Image.Image],
+            y_train: List[int],
+            X_val: List[Image.Image],
+            y_val: List[int],
+            verbose: int
+            ) -> None:
         '''
         Train CNN
         '''
@@ -87,13 +99,13 @@ class CNN:
         self.history = self.model.fit(
             X_train, y_train,
             epochs=100,
-            verbose=1,
+            verbose=verbose,
             batch_size=128,
             validation_data=(X_val, y_val),
             callbacks=[early_stopping]
         )
 
-    def predict(self, input):
+    def predict(self, input: Union[Image.Image, List[Image.Image]]) -> np.ndarray:
         '''
         Predict value(s) using the trained CNN
         '''
@@ -103,7 +115,7 @@ class CNN:
             input = self._reshape_data_CNN(input)
         return self.model.predict(input)
     
-    def evaluate(self, X_test, y_test):
+    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> None:
         '''
         Evaluates the model's accuracy, precision, recall and F1
         '''
