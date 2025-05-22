@@ -10,8 +10,8 @@ from sklearn.metrics import confusion_matrix, classification_report, ConfusionMa
 class CNN:
     def __init__(
             self,
-            input_shape: Tuple[int, int, int] = (28, 28, 1), 
-            num_classes: int = 10
+            input_shape: Tuple[int, int, int], 
+            num_classes: int
             ) -> None:
         '''
         Initialize CNN with given parameters
@@ -82,7 +82,7 @@ class CNN:
             verbose: int
             ) -> None:
         '''
-        Train CNN
+        Train CNN using the training and validation data
         '''
         X_train = self._reshape_data_CNN(X_train)
         y_train = keras.utils.to_categorical(np.array(y_train), self.num_classes)

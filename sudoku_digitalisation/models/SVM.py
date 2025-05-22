@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from sklearn import svm
+from typing import List, Union, Tuple
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -10,47 +11,50 @@ from sklearn.metrics import (
 )
 
 
-def reshape_image_SVM(img):
-    img_array = np.array(img)
-    normalized_array = img_array.astype(np.float32) / 255.0
-    return normalized_array.flatten()
-
-
-def reshape_data_SVM(image_list):
-    sample = reshape_image_SVM(image_list[0])
-    reshaped_data = np.zeros((len(image_list), len(sample)), dtype=np.float32)
-    for i, img in enumerate(image_list):
-        reshaped_data[i] = reshape_image_SVM(img)
-    return reshaped_data
-
-
 class SVM():
-    def __init__(self):
+    def __init__(self, input_shape: Tuple[int, int], verbose: bool = False) -> None:
         '''
         Initialise svm as a one versus all SVM
         '''
-        # MAYBE ADD THE DIFFERENT SVM PARAMETERS AS ATTRIBUTES?
-        self.svm = svm.LinearSVC(verbose=True)
+        self.n_features = input_shape[0] * input_shape[1]
+        self.model = svm.LinearSVC(verbose=verbose)
 
-    def train(self, X_train, y_train):
+    def _reshape_image_SVM(self, img: Image.Image) -> np.ndarray:
+        '''
+        Reshapes single image to match input shape
+        '''
+        img_array = np.array(img)
+        normalized_array = img_array.astype(np.float32) / 255.0
+        return normalized_array.flatten()
+
+    def _reshape_data_SVM(self, image_list: List[Image.Image]) -> np.ndarray:
+        '''
+        Reshapes a list of images to match input shape
+        '''
+        reshaped_data = np.zeros((len(image_list), self.n_features), dtype=np.float32)
+        for i, img in enumerate(image_list):
+            reshaped_data[i] = self._reshape_image_SVM(img)
+        return reshaped_data
+
+    def train(self, X_train: List[Image.Image], y_train: List[int]) -> None:
         '''
         Trains svm on X_train matrix and y_train vector
         '''
-        X_train = reshape_data_SVM(X_train)
+        X_train = self._reshape_data_SVM(X_train)
         y_train = np.array(y_train)
-        self.svm.fit(X_train, y_train)
+        self.model.fit(X_train, y_train)
 
-    def predict(self, X_test):
+    def predict(self, input: Union[Image.Image, List[Image.Image]]) -> np.ndarray:
         '''
         Predict value(s) using the trained SVM
         '''
-        if isinstance(X_test, Image.Image):
-            X_test = reshape_image_SVM(X_test)
+        if isinstance(input, Image.Image):
+            input = self._reshape_image_SVM(input)
         else:
-            X_test = reshape_data_SVM(X_test)
-        return self.svm.predict(X_test)
+            input = self._reshape_data_SVM(input)
+        return self.model.predict(input)
 
-    def evaluate(self, X_test, y_test):
+    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> None:
         '''
         Evaluates the svm using the passed test data
         '''
