@@ -16,15 +16,15 @@ if __name__ == "__main__":
     preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=252)
     digit_dataset= handler.datasets['digits']
 
-    X_train = digit_dataset['train']['image']
-    y_train = digit_dataset['train']['label']
+    # X_train = digit_dataset['train']['image']
+    # y_train = digit_dataset['train']['label']
 
-    X_test = digit_dataset['test']['image']
-    y_test = digit_dataset['test']['label']
+    # X_test = digit_dataset['test']['image']
+    # y_test = digit_dataset['test']['label']
 
-    svm = SVM()
-    svm.train(X_train[:8000], y_train[:8000])
-    svm.evaluate(X_test, y_test)
+    # svm = SVM()
+    # svm.train(X_train[:10000], y_train[:10000])
+    # svm.evaluate(X_test, y_test)
 
     cnn, history = train_cnn(digit_dataset['train'], digit_dataset['validation'])
     evaluate_cnn(cnn, history, digit_dataset['test'])

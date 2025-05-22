@@ -11,17 +11,14 @@ from sklearn.metrics import (
 
 
 def reshape_image_SVM(img):
-    img_array = np.array(img).astype(np.float32)
-    img_array /= 255.0
-    return img_array.flatten()
+    img_array = np.array(img)
+    normalized_array = img_array.astype(np.float32) / 255.0
+    return normalized_array.flatten()
 
 
 def reshape_data_SVM(image_list):
-    example = reshape_image_SVM(image_list[0])
-    n_samples = len(image_list)
-    n_features = len(example)
-
-    reshaped_data = np.zeros((n_samples, n_features), dtype=np.float32)
+    sample = reshape_image_SVM(image_list[0])
+    reshaped_data = np.zeros((len(image_list), len(sample)), dtype=np.float32)
     for i, img in enumerate(image_list):
         reshaped_data[i] = reshape_image_SVM(img)
     return reshaped_data

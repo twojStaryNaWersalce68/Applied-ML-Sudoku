@@ -1,24 +1,26 @@
 import numpy as np
 import keras
 import matplotlib.pyplot as plt
-import cv2
 from datasets import Dataset
 from typing import Tuple
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 
-def reshape_image(img):
-    arr = np.array(img)
-    resized = cv2.resize(arr, (28, 28), interpolation=cv2.INTER_AREA)
-    return resized
 
-# Preprocessing for CNN
-def make_dataset(img_list):
-    N = len(img_list)
-    out = np.zeros((N, 28, 28, 1), dtype=np.float32)
-    for i, img in enumerate(img_list):
-        resized = reshape_image(img)
-        out[i, :, :, 0] = resized.astype(np.float32)
-    return out
+def reshape_image_CNN(img):
+    img_array = np.array(img)
+    shape = img_array.shape[0]
+    normalized_array = img_array.astype(np.float32) / 255.0
+    return normalized_array.reshape(shape, shape, 1)
+
+
+def reshape_data_CNN(image_list):
+    n_samples = len(image_list)
+    shape = np.array(image_list[0]).shape[0]
+    reshaped_data = np.zeros((n_samples, shape, shape, 1), dtype=np.float32)
+    for i, img in enumerate(image_list):
+        reshaped_data[i] = reshape_image_CNN(img)
+    return reshaped_data
+
 
 def train_cnn(train_data: Dataset, val_data: Dataset) -> Tuple[keras.models.Sequential, keras.callbacks.History]:
     ### Convert labels for CNN ###
@@ -29,8 +31,8 @@ def train_cnn(train_data: Dataset, val_data: Dataset) -> Tuple[keras.models.Sequ
     train_imgs = train_data["image"]
     val_imgs   = val_data["image"]
 
-    train_images = make_dataset(train_imgs)
-    val_images   = make_dataset(val_imgs)
+    train_images = reshape_data_CNN(train_imgs)
+    val_images   = reshape_data_CNN(val_imgs)
 
     # One-hot encoding
     train_labels = keras.utils.to_categorical(train_labels, num_classes=10)
@@ -83,11 +85,12 @@ def train_cnn(train_data: Dataset, val_data: Dataset) -> Tuple[keras.models.Sequ
 
     return cnn, history
 
+
 def evaluate_cnn(cnn: keras.models.Sequential,
                  history: keras.callbacks.History, 
                  test_data: Dataset) -> None:
     
-    test_images = make_dataset(test_data['image'])
+    test_images = reshape_data_CNN(test_data['image'])
     y_true = np.array(test_data['label'])
     test_labels = keras.utils.to_categorical(y_true, num_classes=10)
 
