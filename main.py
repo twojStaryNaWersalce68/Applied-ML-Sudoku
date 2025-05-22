@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     # IF THE DATASET HAS ALREADY BEEN PREPROCESSED AND SAVED, USE:
     handler = load_sudoku_dataset()
+    preprocessor = DatasetPreprocessor(handler, clip_limit=3, output_size=252)
     digit_dataset= handler.datasets['digits']
 
     X_train = digit_dataset['train']['image']
@@ -22,7 +23,7 @@ if __name__ == "__main__":
     y_test = digit_dataset['test']['label']
 
     svm = SVM()
-    svm.train(X_train, y_train)
+    svm.train(X_train[:8000], y_train[:8000])
     svm.evaluate(X_test, y_test)
 
     cnn, history = train_cnn(digit_dataset['train'], digit_dataset['validation'])

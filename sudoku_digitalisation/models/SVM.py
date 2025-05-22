@@ -9,9 +9,12 @@ from sklearn.metrics import (
     ConfusionMatrixDisplay
 )
 
+
 def reshape_image_SVM(img):
     img_array = np.array(img).astype(np.float32)
+    img_array /= 255.0
     return img_array.flatten()
+
 
 def reshape_data_SVM(image_list):
     example = reshape_image_SVM(image_list[0])
@@ -37,7 +40,6 @@ class SVM():
         Trains svm on X_train matrix and y_train vector
         '''
         X_train = reshape_data_SVM(X_train)
-        print("Training SVM...")
         y_train = np.array(y_train)
         self.svm.fit(X_train, y_train)
 
