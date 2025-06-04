@@ -147,37 +147,46 @@ if __name__ == '__main__':
     _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
 
     # focus on one cell for now
-    cell_sample = digit_dataset[6] #6 3 8
+    cell_sample = digit_dataset[6] #6 3 8 1
     plt.imshow(cell_sample, cmap="gray")
     plt.show()
 
     # find contours of the small numbers
     cell_sample = np.array(cell_sample)
-    _, binary_sample = cv2.threshold(cell_sample, 150, 255, cv2.THRESH_BINARY) # + cv2.THRESH_OTSU)
+    cell_img = cell_sample.copy()
+    _, binary_sample = cv2.threshold(cell_sample, 160, 255, cv2.THRESH_BINARY)# + cv2.THRESH_OTSU)
 
-    #edged_sample = cv2.Canny(cell_sample, 150, 200)
     contours, hierarchy = cv2.findContours(binary_sample, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print("num of contours", len(contours))
+    #print("num of contours", len(contours))
     bounding_box = []
-    print("areas")
+    #print("areas")
     for contour in contours:
         area = cv2.contourArea(contour)
-        print(area)
+        #print(area)
         if 20 <= area <= 200:
             x, y, w, h = cv2.boundingRect(contour)
             bounding_box.append([x, y, w, h])
             cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
     print("num of bb", len(bounding_box))
-    print(bounding_box)
-    #print(contours)
-    #print(hierarchy)
+    #print(bounding_box)
+
     plt.imshow(binary_sample, cmap="gray")
     plt.show()
 
-    #cv2.drawContours(cell_sample, contours[0], -1, (0, 255, 0), 2)
     plt.imshow(cell_sample, cmap="gray")
     plt.show()
 
+    tiny_digits = []
+    for bbox in bounding_box:
+        x, y, w, h = bbox
+        centre_x = x + (w / 2)
+        centre_y = y + (h / 2)
+        size = max(w, h)
+        x = int(centre_x - size/2)
+        y = int(centre_y - size/2)
+        cropped_image = cell_img[y:y + size, x:x + size]
+        plt.imshow(cropped_image, cmap="gray")
+        plt.show()
 
 
 
