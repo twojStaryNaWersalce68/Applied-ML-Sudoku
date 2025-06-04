@@ -185,6 +185,7 @@ if __name__ == '__main__':
         x = int(centre_x - size/2)
         y = int(centre_y - size/2)
         cropped_image = cell_img[y:y + size, x:x + size]
+        cropped_image = cv2.resize(cropped_image, (28, 28))
         plt.imshow(cropped_image, cmap="gray")
         plt.show()
 

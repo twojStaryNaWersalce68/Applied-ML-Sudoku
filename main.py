@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 from PIL import Image
+import cv2
 
 
 def get_preprocessed_dataset(is_preprocessed: bool = False):
@@ -74,25 +75,69 @@ def predict_sudoku(cnn: Sequential, sudoku_sample: Image.Image):
     plt.show()
 
 
+def get_tiny_digits():
+    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers.jpg")
+    plt.imshow(sudoku_sample, cmap="gray")
+    plt.show()
+    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
+    _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
+
+    # focus on one cell for now
+    cell_sample = digit_dataset[6]  # 6 3 8 1
+    plt.imshow(cell_sample, cmap="gray")
+    plt.show()
+
+    # find contours of the small numbers
+    cell_sample = np.array(cell_sample)
+    cell_img = cell_sample.copy()
+    _, binary_sample = cv2.threshold(cell_sample, 160, 255, cv2.THRESH_BINARY)  # + cv2.THRESH_OTSU)
+
+    contours, hierarchy = cv2.findContours(binary_sample, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # print("num of contours", len(contours))
+    bounding_box = []
+    # print("areas")
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        # print(area)
+        if 20 <= area <= 200:
+            x, y, w, h = cv2.boundingRect(contour)
+            bounding_box.append([x, y, w, h])
+            cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
+    print("num of bb", len(bounding_box))
+    # print(bounding_box)
+
+    plt.imshow(binary_sample, cmap="gray")
+    plt.show()
+
+    plt.imshow(cell_sample, cmap="gray")
+    plt.show()
+
+    tiny_digits = []
+    for bbox in bounding_box:
+        x, y, w, h = bbox
+        centre_x = x + (w / 2)
+        centre_y = y + (h / 2)
+        size = max(w, h)
+        x = int(centre_x - size / 2)
+        y = int(centre_y - size / 2)
+        cropped_image = cell_img[y:y + size, x:x + size]
+        cropped_image = cv2.resize(cropped_image, (28, 28))
+        tiny_digits.append(Image.fromarray(cropped_image))
+
+        plt.imshow(cropped_image, cmap="gray")
+        plt.show()
+
+    return tiny_digits
+
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='This program takes an optional argument for prediction. If no argument is given, the model is trained.')
-    parser.add_argument('path', nargs='?', help='Path to image for prediction. The image should be cropped to the Sudoku.')
-
-    test_image = None
-    args = parser.parse_args()
-    if args.path:
-        print(f"Argument received, digitizing sudoku")
-        train_model = False
-        try:
-            test_image = Image.open(args.path)
-        except Exception as e:
-            print(f"Failed to open image: {e}")
-    else:
-        print("No argument given, training model")
-        train_model = True
-
     preprocessor = get_preprocessed_dataset(is_preprocessed=True) # change this to False if the dataset hasn't been processed and saved
-    cnn = get_model(preprocessor, train_model)
+    cnn = get_model(preprocessor, False)
 
-    if test_image:
-        predict_sudoku(cnn, test_image)
+    #if test_image:
+        #predict_sudoku(cnn, test_image)
+    tiny_digits = get_tiny_digits()
+    predictions = cnn.predict(tiny_digits)
+    for prediction in predictions:
+        print(np.argmax(prediction))
