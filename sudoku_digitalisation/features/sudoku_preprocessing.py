@@ -138,27 +138,22 @@ def showcase():
 # If you get a ModuleNotFoundError, run:
 # python -m sudoku_digitalisation.features.sudoku_preprocessing
 
-def boxes_overlap(bbox1, bbox2):
-    x1, y1, w1, h1 = bbox1
-    x2, y2, w2, h2 = bbox2
-    return not (x1 + w1 < x2 or x2 + w2 < x1 or y1 + h1 < y2 or y2 + h2 < y1)
-
 
 if __name__ == '__main__':
-    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers2.jpg")
+    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers.jpg")
     plt.imshow(sudoku_sample, cmap="gray")
     plt.show()
     preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
     _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
 
     # focus on one cell for now
-    cell_sample = digit_dataset[3] #6 3 8
+    cell_sample = digit_dataset[6] #6 3 8
     plt.imshow(cell_sample, cmap="gray")
     plt.show()
 
     # find contours of the small numbers
     cell_sample = np.array(cell_sample)
-    _, binary_sample = cv2.threshold(cell_sample, 150, 255, cv2.THRESH_BINARY_INV) # + cv2.THRESH_OTSU)
+    _, binary_sample = cv2.threshold(cell_sample, 150, 255, cv2.THRESH_BINARY) # + cv2.THRESH_OTSU)
 
     #edged_sample = cv2.Canny(cell_sample, 150, 200)
     contours, hierarchy = cv2.findContours(binary_sample, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -170,19 +165,8 @@ if __name__ == '__main__':
         print(area)
         if 20 <= area <= 200:
             x, y, w, h = cv2.boundingRect(contour)
-            no_overlap = True
-            for i, b_box in enumerate(bounding_box):
-                if boxes_overlap([x, y, w, h], b_box):
-                    bb_area = b_box[2] * b_box[3]
-                    new_bb_area = w * h
-                    if new_bb_area > bb_area:
-                        bounding_box[i] = [x, y, w, h]
-                    no_overlap = False
-            if no_overlap:
-                bounding_box.append([x, y, w, h])
-    for bbox in bounding_box:
-        x, y, w, h = bbox
-        cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
+            bounding_box.append([x, y, w, h])
+            cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
     print("num of bb", len(bounding_box))
     print(bounding_box)
     #print(contours)
