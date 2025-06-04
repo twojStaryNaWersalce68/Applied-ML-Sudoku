@@ -76,30 +76,30 @@ def predict_sudoku(cnn: Sequential, sudoku_sample: Image.Image):
 
 
 def get_tiny_digits():
-    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers.jpg")
+    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers3.jpg")
     plt.imshow(sudoku_sample, cmap="gray")
     plt.show()
     preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
     _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
 
     # focus on one cell for now
-    cell_sample = digit_dataset[6]  # 6 3 8 1
+    cell_sample = digit_dataset[16]  # 6 3 8/16 1
     plt.imshow(cell_sample, cmap="gray")
     plt.show()
 
     # find contours of the small numbers
     cell_sample = np.array(cell_sample)
     cell_img = cell_sample.copy()
-    _, binary_sample = cv2.threshold(cell_sample, 160, 255, cv2.THRESH_BINARY)  # + cv2.THRESH_OTSU)
+    _, binary_sample = cv2.threshold(cell_sample, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
     contours, hierarchy = cv2.findContours(binary_sample, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    # print("num of contours", len(contours))
+    print("num of contours", len(contours))
     bounding_box = []
-    # print("areas")
+    print("areas")
     for contour in contours:
         area = cv2.contourArea(contour)
-        # print(area)
-        if 20 <= area <= 200:
+        print(area)
+        if 25 <= area <= 200:
             x, y, w, h = cv2.boundingRect(contour)
             bounding_box.append([x, y, w, h])
             cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
@@ -138,6 +138,9 @@ if __name__ == "__main__":
     #if test_image:
         #predict_sudoku(cnn, test_image)
     tiny_digits = get_tiny_digits()
-    predictions = cnn.predict(tiny_digits)
-    for prediction in predictions:
-        print(np.argmax(prediction))
+    if len(tiny_digits) > 0:
+        predictions = cnn.predict(tiny_digits)
+        for prediction in predictions:
+            print(np.argmax(prediction))
+    else:
+        print("no digits found")
