@@ -88,7 +88,12 @@ class DatasetPreprocessor(SudokuPreprocessor):
 ### SHOWCASE ###
 ################
 
-def showcase():
+
+# If you get a ModuleNotFoundError, run:
+# python -m sudoku_digitalisation.features.sudoku_preprocessing
+
+
+if __name__ == '__main__':
     # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # loads from huggingface
     # # saves a specified locally, if no path is specified it is in sudoku_digitalisation/data/datasets
     # preprocessor.handler.save_dataset('raw')
@@ -133,61 +138,5 @@ def showcase():
     # THE FOLLOWING CODE WILL NOT WORK WHILE EDGE DETECTION IS NOT IMPLEMENTED
     # full preprocessing can be applied on images as well
     _, digits_list = preprocessor.sudoku_preprocessing(test_img)
-
-
-# If you get a ModuleNotFoundError, run:
-# python -m sudoku_digitalisation.features.sudoku_preprocessing
-
-
-if __name__ == '__main__':
-    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers.jpg")
-    plt.imshow(sudoku_sample, cmap="gray")
-    plt.show()
-    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
-    _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
-
-    # focus on one cell for now
-    cell_sample = digit_dataset[6] #6 3 8 1
-    plt.imshow(cell_sample, cmap="gray")
-    plt.show()
-
-    # find contours of the small numbers
-    cell_sample = np.array(cell_sample)
-    cell_img = cell_sample.copy()
-    _, binary_sample = cv2.threshold(cell_sample, 160, 255, cv2.THRESH_BINARY)# + cv2.THRESH_OTSU)
-
-    contours, hierarchy = cv2.findContours(binary_sample, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    #print("num of contours", len(contours))
-    bounding_box = []
-    #print("areas")
-    for contour in contours:
-        area = cv2.contourArea(contour)
-        #print(area)
-        if 20 <= area <= 200:
-            x, y, w, h = cv2.boundingRect(contour)
-            bounding_box.append([x, y, w, h])
-            cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
-    print("num of bb", len(bounding_box))
-    #print(bounding_box)
-
-    plt.imshow(binary_sample, cmap="gray")
-    plt.show()
-
-    plt.imshow(cell_sample, cmap="gray")
-    plt.show()
-
-    tiny_digits = []
-    for bbox in bounding_box:
-        x, y, w, h = bbox
-        centre_x = x + (w / 2)
-        centre_y = y + (h / 2)
-        size = max(w, h)
-        x = int(centre_x - size/2)
-        y = int(centre_y - size/2)
-        cropped_image = cell_img[y:y + size, x:x + size]
-        cropped_image = cv2.resize(cropped_image, (28, 28))
-        plt.imshow(cropped_image, cmap="gray")
-        plt.show()
-
 
 
