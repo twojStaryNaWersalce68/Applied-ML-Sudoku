@@ -85,72 +85,74 @@ def dark_or_light_mode_settings(image):
     return (mean_colour, mean_colour, mean_colour), cv2.THRESH_BINARY
 
 
-def get_tiny_digits():  # candidate digits
-    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers3.jpg")
-    plt.imshow(sudoku_sample, cmap="gray")
-    #plt.show()
-    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
-    _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
-
+def get_tiny_digits(cell_sample):  # candidate digits
     # focus on one cell for now
-    cell_sample = digit_dataset[16]  # 6 3 8/16 1
     cell_sample = np.array(cell_sample)
     plt.imshow(cell_sample, cmap="gray")
     plt.title("Cell Raw")
-    plt.show()
+    #plt.show()
 
     background_colour, thresh_setting = dark_or_light_mode_settings(cell_sample)
 
     h, w = cell_sample.shape
-    print(cell_sample.shape)
+    #print(cell_sample.shape)
     margin = 2
     cell_sample = cell_sample[margin:(h-margin), margin:(w-margin)]
     cell_sample = cv2.copyMakeBorder(src=cell_sample, top=margin, bottom=margin, left=margin, right=margin, borderType=cv2.BORDER_CONSTANT, value=background_colour)
 
-    print(cell_sample.shape)
+    #print(cell_sample.shape)
 
     plt.imshow(cell_sample, cmap="gray")
     plt.title("Cell Cropped")
-    plt.show()
+    #plt.show()
 
     # find contours of the small numbers
     cell_img = cell_sample.copy()
     _, binary_sample = cv2.threshold(cell_sample, 0, 255, thresh_setting + cv2.THRESH_OTSU)
 
     contours, hierarchy = cv2.findContours(binary_sample, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    print("num of contours", len(contours))
+    #print("num of contours", len(contours))
     bounding_box = []
-    print("areas")
+    #print("areas")
     for contour in contours:
         area = cv2.contourArea(contour)
-        print(area)
-        if 25 <= area <= 300:
+        #print(area)
+        if 20 <= area <= 300:
             x, y, w, h = cv2.boundingRect(contour)
             bounding_box.append([x, y, w, h])
             cv2.rectangle(cell_sample, (x, y), (x + w, y + h), (0, 255, 0), 1)
-    print("num of bb", len(bounding_box))
+    #print("num of bb", len(bounding_box))
     # print(bounding_box)
 
     plt.imshow(binary_sample, cmap="gray")
-    plt.show()
+    #plt.show()
 
     plt.imshow(cell_sample, cmap="gray")
-    plt.show()
+    #plt.show()
 
     tiny_digits = []
     for bbox in bounding_box:
         x, y, w, h = bbox
         centre_x = x + (w / 2)
         centre_y = y + (h / 2)
+        #print("org:", x, y)
         size = max(w, h)
-        x = int(centre_x - size / 2)
-        y = int(centre_y - size / 2)
+        x = max(0, int(centre_x - size / 2))
+        y = max(0, int(centre_y - size / 2))
+        #print("moved:", x, y)
+        img_h, img_w = cell_img.shape
+        max_h = img_h - y
+        max_w = img_w - x
+        #print("org size", size)
+        size = min(size, max_h, max_w)
+        #print("size", size)
         cropped_image = cell_img[y:y + size, x:x + size]
+        #print(w, h, cell_img.shape)
         cropped_image = cv2.resize(cropped_image, (28, 28))
         tiny_digits.append(Image.fromarray(cropped_image))
 
-        plt.imshow(cropped_image, cmap="gray")
-        plt.show()
+        #plt.imshow(cropped_image, cmap="gray")
+        #plt.show()
 
     return tiny_digits
 
@@ -160,12 +162,37 @@ if __name__ == "__main__":
     preprocessor = get_preprocessed_dataset(is_preprocessed=True) # change this to False if the dataset hasn't been processed and saved
     cnn = get_model(preprocessor, False)
 
-    #if test_image:
-        #predict_sudoku(cnn, test_image)
-    tiny_digits = get_tiny_digits()
-    if len(tiny_digits) > 0:
-        predictions = cnn.predict(tiny_digits)
-        for prediction in predictions:
-            print(np.argmax(prediction))
-    else:
-        print("no digits found")
+    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers1.jpg")
+    plt.imshow(sudoku_sample, cmap="gray")
+    plt.show()
+    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
+    _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
+
+    for idx in range(81):
+    #idx = 3
+        tiny_digits = get_tiny_digits(digit_dataset[idx]) # 6 3 8/16 1 1
+
+        if len(tiny_digits) > 0:
+            predictions = cnn.predict(tiny_digits)
+            cell_labels_binary = [0] * 10
+            for i, prediction in enumerate(predictions):
+                label = np.argmax(prediction)
+                #print(label)
+                #plt.imshow(tiny_digits[i], cmap="gray")
+                #plt.title(label)
+                #plt.show()
+                if 0 <= label <= 9:
+                    cell_labels_binary[label] = 1
+            #print(cell_labels_binary)
+
+            cell_labels = []
+            for i in range(len(cell_labels_binary)):
+                if cell_labels_binary[i] == 1:
+                    cell_labels.append(i)
+            print(idx, cell_labels)
+            plt.imshow(digit_dataset[idx], cmap="gray")
+            plt.title(f"{idx}: {cell_labels}")
+            plt.show()
+
+        else:
+            print("no digits found")
