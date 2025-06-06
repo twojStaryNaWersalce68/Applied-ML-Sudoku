@@ -22,8 +22,7 @@ def get_model(
         if model_name is None:
             X_train, y_train, X_val, y_val = get_train_val(preprocessor)
             cnn.train(X_train, y_train, X_val, y_val, verbose=1)
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            cnn.save(f"{timestamp}")
+            cnn.save("default")
         else:
             cnn.load(model_name)
         return cnn
@@ -35,7 +34,7 @@ def get_model(
             X_train, y_train, _, _ = get_train_val(preprocessor)
             svm.train(X_train[:10000], y_train[:10000])
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            svm.save(f"{timestamp}")
+            svm.save("default")
         else:
             svm.load(model_name)
         return svm
