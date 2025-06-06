@@ -7,6 +7,8 @@ from sudoku_digitalisation.features.image_operations import ImageConverter, Imag
 from sudoku_digitalisation.features.edge_detector import EdgeDetector
 from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
 from sudoku_digitalisation.features.dataset_handler import DatasetHandler, load_sudoku_dataset
+import matplotlib.pyplot as plt
+import cv2
 
 
 class SudokuPreprocessor:
@@ -86,8 +88,10 @@ class DatasetPreprocessor(SudokuPreprocessor):
 ### SHOWCASE ###
 ################
 
+
 # If you get a ModuleNotFoundError, run:
 # python -m sudoku_digitalisation.features.sudoku_preprocessing
+
 
 if __name__ == '__main__':
     # handler = load_sudoku_dataset("Lexski/sudoku-image-recognition", hugface=True) # loads from huggingface
@@ -107,9 +111,9 @@ if __name__ == '__main__':
     convert_crop_dataset, digits_dataset = preprocessor.dataset_preprocessing()
     preprocessor.handler.save_all_datasets()
 
-    print(preprocessor.handler.datasets['raw']) # raw dataset
-    print(preprocessor.handler.datasets['preprocessed']) # preprocessed dataset
-    print(preprocessor.handler.datasets['digits']) # single digits dataset
+    print(preprocessor.handler.datasets['raw'])  # raw dataset
+    print(preprocessor.handler.datasets['preprocessed'])  # preprocessed dataset
+    print(preprocessor.handler.datasets['digits'])  # single digits dataset
 
     # get a single image, without labels or checkpoints
     test_img = preprocessor.handler.datasets['raw']['train']['image'][0]
@@ -120,9 +124,9 @@ if __name__ == '__main__':
 
     split = 'train'
     index = 29
-    preprocessor.handler.show_image('raw', split, index) # image from the raw dataset
-    preprocessor.handler.show_image('preprocessed', split, index) # image from the preprocessed dataset
-    preprocessor.handler.show_image('digits', split, index * 81) # image from the digits dataset
+    preprocessor.handler.show_image('raw', split, index)  # image from the raw dataset
+    preprocessor.handler.show_image('preprocessed', split, index)  # image from the preprocessed dataset
+    preprocessor.handler.show_image('digits', split, index * 81)  # image from the digits dataset
 
     # all individual functions can be accessed through the preprocessor
     preprocessor = DatasetPreprocessor(clip_limit=3, output_size=450)
@@ -134,3 +138,5 @@ if __name__ == '__main__':
     # THE FOLLOWING CODE WILL NOT WORK WHILE EDGE DETECTION IS NOT IMPLEMENTED
     # full preprocessing can be applied on images as well
     _, digits_list = preprocessor.sudoku_preprocessing(test_img)
+
+
