@@ -25,25 +25,24 @@ class CNN:
         '''
         Build the model
         '''
-        cnn = keras.models.Sequential()
+        input = keras.Input(shape=self.input_shape)
 
-        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        conv1 = keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu')(input)
+        maxpool1 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1)
+        conv2 = keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(maxpool1)
+        maxpool2 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2)
 
-        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        maxpool2 = keras.layers.Flatten()(maxpool2)
 
-        cnn.add(keras.layers.Flatten())
+        dense1 = keras.layers.Dense(units=128, activation='relu')(maxpool2)
+        dropout1 = keras.layers.Dropout(0.2)(dense1)
+        dense2 = keras.layers.Dense(units=128, activation='relu')(dropout1)
+        dropout2 = keras.layers.Dropout(0.2)(dense2)
+        dense3 = keras.layers.Dense(units=self.num_classes, activation='softmax')(dropout2)
 
-        cnn.add(keras.layers.Dense(units=128, activation='relu'))
-        cnn.add(keras.layers.Dropout(0.2))
+        model = keras.Model(inputs=input, outputs=dense3)
 
-        cnn.add(keras.layers.Dense(units=128, activation='relu'))
-        cnn.add(keras.layers.Dropout(0.2))
-
-        cnn.add(keras.layers.Dense(units=self.num_classes, activation='softmax'))
-
-        cnn.compile(
+        model.compile(
             optimizer='adam',
             loss='categorical_crossentropy',
             metrics=[
@@ -52,7 +51,8 @@ class CNN:
                 keras.metrics.Recall(name='recall')
             ]
         )
-        return cnn
+
+        return model
     
     def _reshape_image_CNN(self, img: Image.Image) -> np.ndarray:
         '''
