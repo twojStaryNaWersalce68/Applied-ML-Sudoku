@@ -7,7 +7,7 @@ if __name__ == "__main__":
     CNN = 'cnn'                 # put None if you don't want to get a CNN
     SVM = 'svm'                 # put None if you don't want to get a SVM
     CNN_NAME = 'sudoku_cnn'     # name for saved CNN, None if you want training
-    SVM_NAME = None             # name for saved SVM, None if you want training
+    SVM_NAME = 'default'        # name for saved SVM, None if you want training
 
     # preprocessor for everything, clip_limit is for CLAHE, output_size for the output size of cropped images
     preprocessor = get_preprocessor(clip_limit=3, output_size=252, is_preprocessed=IS_PREPROCESSED)
