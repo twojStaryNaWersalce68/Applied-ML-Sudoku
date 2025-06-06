@@ -1,5 +1,5 @@
-import numpy as np
-from typing import Optional, Union, Tuple
+import datetime
+from typing import Optional, Union
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
@@ -21,17 +21,21 @@ def get_model(
         cnn = CNN(input_shape=(dim, dim, 1), num_classes=10)
         if model_name is None:
             X_train, y_train, X_val, y_val = get_train_val(preprocessor)
-            cnn.train(X_train, y_train, X_val, y_val)
+            cnn.train(X_train, y_train, X_val, y_val, verbose=1)
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            cnn.save(f"{timestamp}")
         else:
             cnn.load(model_name)
         return cnn
 
     elif model_type == 'svm':
         print("Getting SVM...")
-        svm = SVM(input_shape=(dim, dim))
+        svm = SVM(input_shape=(dim, dim), verbose=True)
         if model_name is None:
             X_train, y_train, _, _ = get_train_val(preprocessor)
-            svm.train(X_train, y_train)
+            svm.train(X_train[:10000], y_train[:10000])
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            svm.save(f"{timestamp}")
         else:
             svm.load(model_name)
         return svm

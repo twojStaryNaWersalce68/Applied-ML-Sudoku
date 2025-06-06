@@ -87,11 +87,11 @@ class SVM():
         if path is None:
             path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
         os.makedirs(path, exist_ok=True)
-        save_path = os.path.join(path, f"{name}.keras")
+        save_path = os.path.join(path, f"{name}.joblib")
         joblib.dump(self.model, save_path)
 
     def load(self, name: str, path: str=None) -> None:
         if path is None:
             path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
-        load_path = os.path.join(path, f"{name}.keras")
+        load_path = os.path.join(path, f"{name}.joblib")
         self.model = joblib.load(load_path)

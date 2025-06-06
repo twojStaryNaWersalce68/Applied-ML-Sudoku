@@ -1,7 +1,7 @@
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.run_training import get_model
 
-
+# Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
     IS_PREPROCESSED = True      # bool to see if the dataset is preprocessed already
     CNN = 'cnn'                 # put None if you don't want to get a CNN
