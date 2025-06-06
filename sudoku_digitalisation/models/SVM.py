@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+import joblib
 from PIL import Image
 from sklearn import svm
 from typing import List, Union, Tuple
@@ -80,3 +82,16 @@ class SVM():
         # Per class precisionm recall and F1
         report = classification_report(y_test, y_pred, target_names=[f'Class {i}' for i in range(10)])
         print(report)
+
+    def save(self, name: str, path: str=None) -> None:
+        if path is None:
+            path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
+        os.makedirs(path, exist_ok=True)
+        save_path = os.path.join(path, f"{name}.keras")
+        joblib.dump(self.model, save_path)
+
+    def load(self, name: str, path: str=None) -> None:
+        if path is None:
+            path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
+        load_path = os.path.join(path, f"{name}.keras")
+        self.model = joblib.load(load_path)
