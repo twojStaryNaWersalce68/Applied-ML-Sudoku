@@ -1,4 +1,3 @@
-import datetime
 from typing import Optional, Union
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
@@ -33,7 +32,6 @@ def get_model(
         if model_name is None:
             X_train, y_train, _, _ = get_train_val(preprocessor)
             svm.train(X_train[:10000], y_train[:10000])
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             svm.save("default")
         else:
             svm.load(model_name)
