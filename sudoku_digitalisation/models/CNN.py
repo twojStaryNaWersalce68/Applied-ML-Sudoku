@@ -6,6 +6,7 @@ from PIL import Image
 from typing import Tuple, List, Union
 from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
 
+CELL_NUM = 81
 
 class CNN:
     def __init__(
@@ -148,6 +149,17 @@ class CNN:
         # Per class precision, recall and F1
         report = classification_report(y_test, y_pred, target_names=[f'Class {i}' for i in range(10)])
         print(report)
+
+        # accuracy on sudokus
+        num_sudokus = len(y_test)//CELL_NUM
+        correct_sudokus = 0
+        for i in range(num_sudokus):
+            start = i * CELL_NUM
+            end = start + CELL_NUM
+            if np.array_equal(y_pred[start:end], y_test[start:end]):
+                correct_sudokus += 1
+        correct_percent = correct_sudokus/num_sudokus
+        print(f"accuracy of fully correct sudokus: {correct_percent}")
 
         # Accuracy plot over time
         plt.plot(self.history.history['accuracy'], label='Training Accuracy')
