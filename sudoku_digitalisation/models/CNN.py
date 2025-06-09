@@ -164,13 +164,15 @@ class CNN:
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved", "cnn")
+            base_dir = os.path.dirname(__file__)
+            path = os.path.join(base_dir, "saved", "cnn")
         os.makedirs(path, exist_ok=True)
         save_path = os.path.join(path, f"{name}.keras")
         self.model.save(save_path)
 
     def load(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved", "cnn")
+            base_dir = os.path.dirname(__file__)
+            path = os.path.join(base_dir, "saved", "cnn")
         load_path = os.path.join(path, f"{name}.keras")
         self.model = keras.models.load_model(load_path)
