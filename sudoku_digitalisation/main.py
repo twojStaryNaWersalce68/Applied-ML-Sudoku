@@ -1,7 +1,6 @@
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.run_training import get_model
 from sudoku_digitalisation.run_prediction import make_prediction
-from PIL import Image
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":

@@ -2,7 +2,7 @@ import numpy as np
 from datasets import Dataset, DatasetDict
 from tqdm import tqdm
 from PIL import Image
-from typing import Dict, Tuple, Union, Any
+from typing import Dict, Tuple, Union, Any, List
 from sudoku_digitalisation.features.image_operations import ImageConverter, ImageCropper
 from sudoku_digitalisation.features.edge_detector import EdgeDetector
 from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
@@ -54,7 +54,10 @@ class SudokuPreprocessor:
         dp['image'] = self.convert_crop_image(dp['image'], dp['keypoints'])
         return dp
     
-    def sudoku_preprocessing(self, sudoku: Union[Image.Image, Dict[str, Any]]) -> Tuple[Any, Any]:
+    def sudoku_preprocessing(
+            self,
+            sudoku: Union[Image.Image, Dict[str, Any]]
+            ) -> Tuple[Union[Image.Image, Dict[str, Any]], Union[List[Image.Image], Dataset]]:
         if isinstance(sudoku, Image.Image):
             preprocessed_img = self.convert_crop_image(sudoku)
             digit_list = SudokuSplitter.split_image(preprocessed_img)

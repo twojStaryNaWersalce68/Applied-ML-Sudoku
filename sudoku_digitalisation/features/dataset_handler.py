@@ -11,7 +11,7 @@ def load_sudoku_dataset(path=None, hugface=False) -> 'DatasetHandler':
         return DatasetHandler(dataset=dataset)
 
     path = path if path is not None else os.path.join(
-        "data", "datasets"
+        "sudoku_digitalisation", "data", "datasets"
         )
     raw_path = os.path.join(path, "raw")
     prepro_path = os.path.join(path, "preprocessed")
