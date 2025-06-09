@@ -83,13 +83,13 @@ class SVM():
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
+            path = os.path.join("models", "saved", "svm")
         os.makedirs(path, exist_ok=True)
         save_path = os.path.join(path, f"{name}.joblib")
         joblib.dump(self.model, save_path)
 
     def load(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
+            path = os.path.join("models", "saved", "svm")
         load_path = os.path.join(path, f"{name}.joblib")
         self.model = joblib.load(load_path)

@@ -6,8 +6,9 @@ from sudoku_digitalisation.scripts.run_evaluation import compare_cnn_svm
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
-    IS_PREPROCESSED = True      # bool to see if the dataset is preprocessed already
-    TRAIN_CNN = False           # change this to True if you want to train the CNN, otherwise it is loaded
+    # if you are running it for the first time since my last commit you need to reprocess your data and retrain the CNN!!!!
+    IS_PREPROCESSED = False      # bool to see if the dataset is preprocessed already
+    TRAIN_CNN = True          # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
     GET_SVM = False             # if this is set to False, the SVM is not gotten
     EVALUATE = True             # change to true if you want to run the evaluation
@@ -17,7 +18,8 @@ if __name__ == "__main__":
     SVM_NAME = 'default'        # name for how you save and load SVM
 
     # preprocessor for everything, clip_limit is for CLAHE, output_size for the output size of cropped images
-    preprocessor = get_preprocessor(clip_limit=3, output_size=252, is_preprocessed=IS_PREPROCESSED, path=None)
+    # output size needs to be 450 for the tiny digits to work
+    preprocessor = get_preprocessor(clip_limit=3, output_size=450, is_preprocessed=IS_PREPROCESSED, path=None)
 
     # load or train cnn
     cnn = get_model(TRAIN_CNN, 'cnn', CNN_NAME, preprocessor)

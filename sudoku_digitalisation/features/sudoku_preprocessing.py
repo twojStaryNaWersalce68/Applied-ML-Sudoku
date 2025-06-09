@@ -11,7 +11,7 @@ from sudoku_digitalisation.features.dataset_handler import DatasetHandler, load_
 
 def get_preprocessor(
         clip_limit: int = 3,
-        output_size: int = 252,
+        output_size: int = 450,
         is_preprocessed: bool = False,
         path: Union[str, None] = None
         ) -> 'DatasetPreprocessor':
@@ -38,7 +38,7 @@ class SudokuPreprocessor:
     def __init__(self,
                  # ADD EDGE DETECTOR ATTRIBUTES WHEN NECESSARY
                  clip_limit: int = 3,
-                 output_size: int = 252) -> None:
+                 output_size: int = 450) -> None:
         self.edge_detector = EdgeDetector()
         self.converter = ImageConverter(clip_limit)
         self.cropper = ImageCropper(output_size)
