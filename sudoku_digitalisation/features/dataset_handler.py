@@ -11,7 +11,7 @@ def load_sudoku_dataset(path=None, hugface=False) -> 'DatasetHandler':
         return DatasetHandler(dataset=dataset)
 
     path = path if path is not None else os.path.join(
-        "sudoku_digitalisation", "data", "datasets"
+        "data", "datasets"
         )
     raw_path = os.path.join(path, "raw")
     prepro_path = os.path.join(path, "preprocessed")
@@ -40,7 +40,7 @@ class DatasetHandler:
             "digits": digits_dataset
         }
         self.save_path = save_path if save_path is not None else os.path.join(
-            "sudoku_digitalisation", "data", "datasets"
+            "data", "datasets"
             )
 
     def save_dataset(self, type: str, path: str = None) -> None:
