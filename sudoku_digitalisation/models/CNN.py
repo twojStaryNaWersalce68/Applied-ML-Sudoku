@@ -1,4 +1,6 @@
 import os
+
+import cv2
 import keras
 import numpy as np
 from PIL import Image

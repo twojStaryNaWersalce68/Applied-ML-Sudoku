@@ -98,7 +98,7 @@ class CellSplitter:
         for b_box in b_boxes:
             x, y, size = CellSplitter.find_cropping_dimensions(b_box, image.shape)
             cropped_image = image[y:y + size, x:x + size]
-            cropped_image = cv2.resize(cropped_image, (28, 28))  # Add this to reshape_image in CNN later
+            cropped_image = cv2.resize(cropped_image, (50, 50))  # Add this to reshape_image in CNN later
             candidate_digits.append(Image.fromarray(cropped_image))
         return candidate_digits
 
