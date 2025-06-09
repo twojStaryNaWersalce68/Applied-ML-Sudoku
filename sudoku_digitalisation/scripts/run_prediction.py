@@ -6,13 +6,13 @@ from typing import Dict, Tuple, Union, Any, List
 
 from sudoku_digitalisation.features.cell_splitter import CellSplitter
 from sudoku_digitalisation.models.CNN import CNN
-from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
+from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor, SudokuPreprocessor
 from datasets import Dataset
 
 
 def make_prediction(
         sample_sudoku: Union[Image.Image, Dict[str, Any]],
-        preprocessor: DatasetPreprocessor,
+        preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor],
         cnn: CNN
         ) -> Union[List[int], List[List[int]]]:
     digit_dataset = preprocess(sample_sudoku, preprocessor)
@@ -65,7 +65,7 @@ def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image]
     return human_cell_labels
 
 
-def preprocess(sample_sudoku: Union[Image.Image, Dict[str, Any]], preprocessor: DatasetPreprocessor) -> List[Image.Image]:
+def preprocess(sample_sudoku: Union[Image.Image, Dict[str, Any]], preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor]) -> List[Image.Image]:
     _, digit_dataset = preprocessor.sudoku_preprocessing(sample_sudoku)
     if isinstance(sample_sudoku, dict):
         digit_dataset = Dataset.from_list(digit_dataset)
