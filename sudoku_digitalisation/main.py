@@ -8,7 +8,7 @@ from sudoku_digitalisation.scripts.run_evaluation import compare_cnn_svm
 if __name__ == "__main__":
     # if you are running it for the first time since my last commit you need to reprocess your data and retrain the CNN!!!!
     IS_PREPROCESSED = False      # bool to see if the dataset is preprocessed already
-    TRAIN_CNN = True          # change this to True if you want to train the CNN, otherwise it is loaded
+    TRAIN_CNN = False          # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
     GET_SVM = False             # if this is set to False, the SVM is not gotten
     EVALUATE = True             # change to true if you want to run the evaluation

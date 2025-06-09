@@ -1,6 +1,4 @@
 import os
-
-import cv2
 import keras
 import numpy as np
 from PIL import Image
@@ -166,13 +164,13 @@ class CNN:
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("models", "saved", "cnn")
+            path = os.path.join("sudoku_digitalisation", "models", "saved", "cnn")
         os.makedirs(path, exist_ok=True)
         save_path = os.path.join(path, f"{name}.keras")
         self.model.save(save_path)
 
     def load(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("models", "saved", "cnn")
+            path = os.path.join("sudoku_digitalisation", "models", "saved", "cnn")
         load_path = os.path.join(path, f"{name}.keras")
         self.model = keras.models.load_model(load_path)
