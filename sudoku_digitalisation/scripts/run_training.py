@@ -10,6 +10,9 @@ def get_model(
         model_name: str,
         preprocessor: DatasetPreprocessor
         ) -> Optional[Union[CNN, SVM]]:
+    '''
+    Loads or trains a CNN or SVM, depending on the parameters.
+    '''
 
     dim = preprocessor.cropper.output_size // 9
 
@@ -30,7 +33,7 @@ def get_model(
         if train_model:
             print("Training SVM...")
             X_train, y_train, _, _ = get_train_val(preprocessor)
-            svm.train(X_train[:10000], y_train[:10000])
+            svm.train(X_train, y_train)
             svm.save(model_name)
         else:
             print("Getting SVM...")
@@ -42,6 +45,9 @@ def get_model(
 
 
 def get_train_val(preprocessor: DatasetPreprocessor):
+    '''
+    Get the train and validation splits from the preprocessor.
+    '''
     digit_dataset = preprocessor.handler.datasets['digits']
 
     X_train = digit_dataset['train']['image']

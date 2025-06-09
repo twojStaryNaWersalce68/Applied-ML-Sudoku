@@ -6,8 +6,7 @@ from typing import Tuple, List, Union
 from sklearn.metrics import (
     confusion_matrix,
     classification_report,
-    accuracy_score,
-    ConfusionMatrixDisplay
+    accuracy_score
     )
 
 
@@ -22,10 +21,10 @@ class CNN:
         '''
         self.input_shape = input_shape
         self.num_classes = num_classes
-        self.model = self._build_model()
+        self.model = self.build_model()
         self.history = None
 
-    def _build_model(self) -> keras.models.Sequential:
+    def build_model(self) -> keras.models.Sequential:
         '''
         Build the model
         '''
@@ -33,14 +32,13 @@ class CNN:
 
         cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Dropout(0.2))
 
         cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Dropout(0.2))
 
         cnn.add(keras.layers.Flatten())
-
-        cnn.add(keras.layers.Dense(units=128, activation='relu'))
-        cnn.add(keras.layers.Dropout(0.2))
 
         cnn.add(keras.layers.Dense(units=128, activation='relu'))
         cnn.add(keras.layers.Dropout(0.2))
@@ -83,7 +81,7 @@ class CNN:
             y_train: List[int],
             X_val: List[Image.Image],
             y_val: List[int],
-            verbose: int
+            verbose: int = 1
             ) -> None:
         '''
         Train CNN using the training and validation data
@@ -152,13 +150,12 @@ class CNN:
 
         # Confusion matrix
         cm = confusion_matrix(y_test, y_pred)
-        cm_fig = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
 
         # Classification report
         classes = [str(i) for i in range(10)]
         report = classification_report(y_test, y_pred, target_names=classes, output_dict=True)
 
-        return cm_fig, {
+        return cm, {
             "test accuracy": test_accuracy,
             "precision macro": report["macro avg"]["precision"],
             "recall macro": report["macro avg"]["recall"],

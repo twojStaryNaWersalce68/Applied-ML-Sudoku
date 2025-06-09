@@ -7,8 +7,7 @@ from typing import List, Union, Tuple
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
-    classification_report,
-    ConfusionMatrixDisplay
+    classification_report
 )
 
 
@@ -41,6 +40,9 @@ class SVM():
         '''
         Trains svm on X_train matrix and y_train vector
         '''
+        if len(X_train) > 10000:
+            X_train = X_train[:10000]
+            y_train = y_train[:10000]
         X_train = self._reshape_data_SVM(X_train)
         y_train = np.array(y_train)
         self.model.fit(X_train, y_train)
@@ -67,13 +69,12 @@ class SVM():
 
         # Confusion matrix
         cm = confusion_matrix(y_test, y_pred)
-        cm_fig = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
 
         # Per class precisionm recall and F1
         classes = [str(i) for i in range(10)]
         report = classification_report(y_test, y_pred, target_names=classes, output_dict=True)
 
-        return cm_fig, {
+        return cm, {
             "test accuracy": test_accuracy,
             "precision macro": report["macro avg"]["precision"],
             "recall macro": report["macro avg"]["recall"],
