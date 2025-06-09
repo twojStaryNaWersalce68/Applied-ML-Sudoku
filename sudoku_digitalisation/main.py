@@ -7,8 +7,8 @@ if __name__ == "__main__":
     IS_PREPROCESSED = True      # bool to see if the dataset is preprocessed already
     TRAIN_CNN = False           # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
-    GET_SVM = False             # if this is set to False, the SVM is not gotten
-    EVALUATE = False            # change to true if you want to run the evaluation
+    GET_SVM = True             # if this is set to False, the SVM is not gotten
+    EVALUATE = True            # change to true if you want to run the evaluation
     PREDICT = True              # change to true if you want to run the prediction
 
     CNN_NAME = 'sudoku_cnn'     # name for how you save and load CNN
@@ -22,10 +22,16 @@ if __name__ == "__main__":
     if GET_SVM:
         svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
 
+    X_test = preprocessor.handler.datasets['digits']['test']['image']
+    y_test = preprocessor.handler.datasets['digits']['test']['label']
     # evaluate if we want
     if EVALUATE:
+        cnn_cm, eval_cnn = cnn.evaluate(X_test, y_test)
+        cnn_cm.show()
+        print(eval_cnn)
+        eval_svm = svm.evaluate(X_test, y_test)
+        print(eval_svm)
         # if you use an SVM we need to catch the possibility the var has not been assigned.
-        pass
 
     # prediction if we want but that would be more for the API
     if PREDICT:

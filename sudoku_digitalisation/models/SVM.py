@@ -64,34 +64,32 @@ class SVM():
         y_pred = self.predict(X_test)
 
         # Overall accuracy
-        overall_acc = accuracy_score(y_test, y_pred)
-        print(f"Overall accuracy: {overall_acc:.4f}")
+        test_accuracy = accuracy_score(y_test, y_pred)
 
         # Confusion matrix
         cm = confusion_matrix(y_test, y_pred)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
-        disp.plot(cmap='viridis', values_format='d')
-        plt.title('Confusion Matrix')
-        plt.show()
-
-        # Per class accuracy
-        class_accuracies = cm.diagonal() / cm.sum(axis=1)
-        for i, acc in enumerate(class_accuracies):
-            print(f"Accuracy for Class {i}: {acc:.4f}")
+        cm_fig = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
 
         # Per class precisionm recall and F1
-        report = classification_report(y_test, y_pred, target_names=[f'Class {i}' for i in range(10)])
-        print(report)
+        classes = [str(i) for i in range(10)]
+        report = classification_report(y_test, y_pred, target_names=classes, output_dict=True)
+
+        return cm_fig, {
+            "test accuracy": test_accuracy,
+            "precision macro": report["macro avg"]["precision"],
+            "recall macro": report["macro avg"]["recall"],
+            "f1 macro": report["macro avg"]["f1-score"]
+        }
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved", "cnn")
+            path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
         os.makedirs(path, exist_ok=True)
         save_path = os.path.join(path, f"{name}.joblib")
         joblib.dump(self.model, save_path)
 
     def load(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved", "cnn")
+            path = os.path.join("sudoku_digitalisation", "models", "saved", "svm")
         load_path = os.path.join(path, f"{name}.joblib")
         self.model = joblib.load(load_path)

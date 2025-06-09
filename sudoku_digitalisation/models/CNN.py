@@ -4,7 +4,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from typing import Tuple, List, Union
-from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    accuracy_score,
+    ConfusionMatrixDisplay
+    )
 
 
 class CNN:
@@ -105,6 +110,24 @@ class CNN:
             callbacks=[early_stopping]
         )
 
+        # # Accuracy plot over time
+        # plt.plot(history.history['accuracy'], label='Training Accuracy')
+        # plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Accuracy')
+        # plt.legend()
+        # plt.title('Training vs Validation Accuracy')
+        # plt.show()
+
+        # # Loss plot over time
+        # plt.plot(history.history['loss'], label='Training Loss')
+        # plt.plot(history.history['val_loss'], label='Validation Loss')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Loss')
+        # plt.legend()
+        # plt.title('Training vs Validation Loss')
+        # plt.show()
+
     def predict(self, input: Union[Image.Image, List[Image.Image]]) -> np.ndarray:
         '''
         Predict value(s) using the trained CNN
@@ -116,56 +139,32 @@ class CNN:
             input = self._reshape_data_CNN(input)
         return self.model.predict(input)
     
-    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> None:
+    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> dict:
         '''
-        Evaluates the model's accuracy, precision, recall and F1
+        Evaluates the model and returns metrics for comparison.
         '''
-        X_test = self._reshape_data_CNN(X_test)
+        # Predict
         y_test = np.array(y_test)
-        test_labels = keras.utils.to_categorical(y_test, self.num_classes)
-
-        # Convert one-hot encoded data back to normal labels
-        y_pred_probs = self.model.predict(X_test)
+        y_pred_probs = self.predict(X_test)
         y_pred = np.argmax(y_pred_probs, axis=1)
 
-        # Evaluate the cnn on the test set
-        test_loss, test_accuracy, _, _ = self.model.evaluate(X_test, test_labels, verbose=2)
-        print(f"Test loss: {test_loss}")
-        print(f"Test accuracy: {test_accuracy}")
+        # Test accuracy
+        test_accuracy = accuracy_score(y_test, y_pred)
 
         # Confusion matrix
         cm = confusion_matrix(y_test, y_pred)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
-        disp.plot(cmap='viridis', values_format='d')
-        plt.title('Confusion Matrix')
-        plt.show()
+        cm_fig = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
 
-        # Per class accuracy
-        class_accuracies = cm.diagonal() / cm.sum(axis=1)
-        for i, acc in enumerate(class_accuracies):
-            print(f"Accuracy for Class {i}: {acc:.4f}")
+        # Classification report
+        classes = [str(i) for i in range(10)]
+        report = classification_report(y_test, y_pred, target_names=classes, output_dict=True)
 
-        # Per class precision, recall and F1
-        report = classification_report(y_test, y_pred, target_names=[f'Class {i}' for i in range(10)])
-        print(report)
-
-        # Accuracy plot over time
-        plt.plot(self.history.history['accuracy'], label='Training Accuracy')
-        plt.plot(self.history.history['val_accuracy'], label='Validation Accuracy')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.legend()
-        plt.title('Training vs Validation Accuracy')
-        plt.show()
-
-        # Loss plot over time
-        plt.plot(self.history.history['loss'], label='Training Loss')
-        plt.plot(self.history.history['val_loss'], label='Validation Loss')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.title('Training vs Validation Loss')
-        plt.show()
+        return cm_fig, {
+            "test accuracy": test_accuracy,
+            "precision macro": report["macro avg"]["precision"],
+            "recall macro": report["macro avg"]["recall"],
+            "f1 macro": report["macro avg"]["f1-score"]
+        }
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
