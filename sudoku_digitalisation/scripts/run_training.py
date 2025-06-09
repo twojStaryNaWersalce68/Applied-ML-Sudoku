@@ -6,8 +6,8 @@ from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreproces
 
 def get_model(
         train_model: bool,
-        model_type: Optional[str],
-        model_name: Optional[str],
+        model_type: str,
+        model_name: str,
         preprocessor: DatasetPreprocessor
         ) -> Optional[Union[CNN, SVM]]:
 
@@ -38,7 +38,7 @@ def get_model(
         return svm
 
     else:
-        raise ValueError(f"Unknown model_type '{model_type}'. Expected 'cnn', 'svm', or None.")
+        raise ValueError(f"Unknown model_type '{model_type}'. Expected 'cnn' or 'svm'.")
 
 
 def get_train_val(preprocessor: DatasetPreprocessor):

@@ -1,6 +1,6 @@
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
-from sudoku_digitalisation.run_training import get_model
-from sudoku_digitalisation.run_prediction import make_prediction
+from sudoku_digitalisation.scripts.run_training import get_model
+from sudoku_digitalisation.scripts.run_prediction import make_prediction
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
@@ -22,19 +22,21 @@ if __name__ == "__main__":
     if GET_SVM:
         svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
 
-    X_test = preprocessor.handler.datasets['digits']['test']['image']
-    y_test = preprocessor.handler.datasets['digits']['test']['label']
-    # evaluate if we want
-    if EVALUATE:
-        cnn_cm, eval_cnn = cnn.evaluate(X_test, y_test)
-        cnn_cm.show()
-        print(eval_cnn)
-        eval_svm = svm.evaluate(X_test, y_test)
-        print(eval_svm)
+    # X_test = preprocessor.handler.datasets['digits']['test']['image']
+    # y_test = preprocessor.handler.datasets['digits']['test']['label']
+    # # evaluate if we want
+    # if EVALUATE:
+    #     cnn_cm, eval_cnn = cnn.evaluate(X_test, y_test)
+    #     cnn_cm.show()
+    #     print(eval_cnn)
+    #     eval_svm = svm.evaluate(X_test, y_test)
+    #     print(eval_svm)
         # if you use an SVM we need to catch the possibility the var has not been assigned.
 
     # prediction if we want but that would be more for the API
     if PREDICT:
         sudoku_test_set = preprocessor.handler.datasets['raw']['test']
         sample_sudoku = sudoku_test_set[3]
-        make_prediction(sample_sudoku, preprocessor, cnn)
+        prediction = make_prediction(sample_sudoku, preprocessor, cnn)
+        for i in range(0, 81, 9):
+            print(prediction[i:i+9])

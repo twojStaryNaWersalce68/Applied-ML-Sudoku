@@ -15,11 +15,10 @@ def make_prediction(
     digit_dataset = preprocess(sample_sudoku, preprocessor)
     predictions = cnn.predict(digit_dataset)
     large_digits = find_labels_main(predictions)
-    for i in range(0, 81, 9):
-        print(large_digits[i:i+9])
     show_image(sample_sudoku, "Test Image")
-    # for idx, label in enumerate(large_digits):
-    #     show_image(digit_dataset[idx], f"Label: {label}")
+    for idx, label in enumerate(large_digits):
+        show_image(digit_dataset[idx], f"Label: {label}")
+    return large_digits
 
 
 def find_labels_main(predictions: np.ndarray) -> List[int]:

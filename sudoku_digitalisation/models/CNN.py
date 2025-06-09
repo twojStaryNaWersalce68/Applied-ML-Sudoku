@@ -1,7 +1,6 @@
 import os
 import keras
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image
 from typing import Tuple, List, Union
 from sklearn.metrics import (
