@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image
 from typing import List, Dict, Any
 import cv2
+from typing import Tuple
 from markdown.preprocessors import Preprocessor
 from tensorflow.python.ops.gen_array_ops import lower_bound
 
@@ -19,7 +20,7 @@ class CellSplitter:
         return candidate_digits
 
     @staticmethod
-    def determine_mode(image: np.array) -> (List[int], int):
+    def determine_mode(image: np.array) -> Tuple[List[int], int]:
         """
         Determines the mean colour of the pixels in the cell and returns this,
         as well as the binary threshold setting, which depends on whether the cell is
