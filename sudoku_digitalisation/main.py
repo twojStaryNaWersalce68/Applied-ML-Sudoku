@@ -11,8 +11,8 @@ if __name__ == "__main__":
     TRAIN_CNN = False          # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
     GET_SVM = False             # if this is set to False, the SVM is not gotten
-    EVALUATE = True             # change to true if you want to run the evaluation
-    PREDICT = False            # change to true if you want to run the prediction
+    EVALUATE = False             # change to true if you want to run the evaluation
+    PREDICT = True            # change to true if you want to run the prediction
 
     CNN_NAME = '32_64_128'     # name for how you save and load CNN
     SVM_NAME = 'default'        # name for how you save and load SVM

@@ -54,20 +54,27 @@ def predict_sudoku(cnn, image: Image.Image, output_size=OUTPUT_SIZE):
 cnn_model = load_model()
 
 
-@app.post("/predict/")
+@app.post("/predict/", description = "Sudoku digitizer endpoint. Upload picture of already cropped sudoku."
+                                    " Picture has to be .png, .jpg or .jpeg."
+                                    " Returns 9x9 matrix representing the uploaded sudoku with 0 being an empty space.",
+                        response_model = SudokuPredictions,
+                        response_description = "digitised version of uploaded sudoku, in the form of a 9x9 matrix.")
 async def predict(file: UploadFile = File(...)):
-    print("Received request")
+    if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
+        raise HTTPException(status_code=400, detail="Only image files (.png, .jpg, .jpeg) are accepted")
 
     try:
         image_bytes = await file.read()
-        print(f"Image bytes read: {len(image_bytes)} bytes")
+        image = Image.open(BytesIO(image_bytes)).convert("L")  # convert to grayscale
 
-        image = Image.open(BytesIO(image_bytes)).convert("L")
-        print("Image successfully opened")
     except Exception as e:
-        print(f"Image load error: {e}")
-        raise HTTPException(status_code=400, detail=f"Image error: {e}")
+        raise HTTPException(status_code=400, detail=f"Failed to process image: {e}")
 
-    return {"message": "Image loaded successfully"}
+    try:
+        result = predict_sudoku(cnn_model, image)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+
+    return JSONResponse(content={"sudoku_grid": result})
 
 # Run with: uvicorn fastAPI:app --reload
