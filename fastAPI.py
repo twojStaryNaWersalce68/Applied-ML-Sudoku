@@ -27,19 +27,18 @@ version = "alpha"
 )
 
 # Constants
-MODEL_NAME = "sudoku_cnn"
-MODEL_PATH = "sudoku_digitalisation/models/saved/cnn"
+MODEL_NAME = "32_64_128"
 OUTPUT_SIZE = 450
 
 class SudokuPredictions(BaseModel):
     predictions: List[List[int]]
 
 
-def load_model(model_path=MODEL_PATH, model_name=MODEL_NAME, output_size=OUTPUT_SIZE):
+def load_model(model_name=MODEL_NAME, output_size=OUTPUT_SIZE):
     print("Loading pre-trained model...")
     sudoku_height = output_size // 9
     cnn = CNN(input_shape=(sudoku_height, sudoku_height, 1), num_classes=10)
-    cnn.load(model_name, model_path)
+    cnn.load(model_name)
     return cnn
 
 
@@ -76,6 +75,6 @@ async def predict(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-    return JSONResponse(content={"sudoku_grid new": result})
+    return JSONResponse(content={"sudoku_grid": result})
 
 # Run with: uvicorn fastAPI:app --reload
