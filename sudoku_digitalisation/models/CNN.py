@@ -32,8 +32,12 @@ class CNN:
 
         cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'))
+        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
         cnn.add(keras.layers.Dropout(0.2))
 
+        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
         cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
         cnn.add(keras.layers.Dropout(0.2))

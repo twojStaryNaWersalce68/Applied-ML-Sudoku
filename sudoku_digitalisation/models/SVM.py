@@ -40,9 +40,9 @@ class SVM():
         '''
         Trains svm on X_train matrix and y_train vector
         '''
-        if len(X_train) > 10000:
-            X_train = X_train[:10000]
-            y_train = y_train[:10000]
+        if len(X_train) > 5000:
+            X_train = X_train[:5000]
+            y_train = y_train[:5000]
         X_train = self._reshape_data_SVM(X_train)
         y_train = np.array(y_train)
         self.model.fit(X_train, y_train)

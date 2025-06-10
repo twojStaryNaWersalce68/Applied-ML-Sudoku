@@ -1,20 +1,19 @@
-from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.scripts.run_training import get_model
 from sudoku_digitalisation.scripts.run_prediction import make_prediction
-from sudoku_digitalisation.scripts.run_evaluation import compare_cnn_svm
+from sudoku_digitalisation.scripts.run_evaluation import compare_cnn_svm, show_cm
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
     # if you are running it for the first time since my last commit you need to reprocess your data and retrain the CNN!!!!
     IS_PREPROCESSED = True      # bool to see if the dataset is preprocessed already
-    TRAIN_CNN = False          # change this to True if you want to train the CNN, otherwise it is loaded
+    TRAIN_CNN = False           # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
     GET_SVM = False             # if this is set to False, the SVM is not gotten
     EVALUATE = True             # change to true if you want to run the evaluation
     PREDICT = False             # change to true if you want to run the prediction
 
-    CNN_NAME = '32_64_128'     # name for how you save and load CNN
+    CNN_NAME = '16x2_32x2_128'     # name for how you save and load CNN
     SVM_NAME = 'default'        # name for how you save and load SVM
 
     # preprocessor for everything, clip_limit is for CLAHE, output_size for the output size of cropped images
