@@ -27,19 +27,18 @@ version = "alpha"
 )
 
 # Constants
-MODEL_NAME = "sudoku_cnn"
-MODEL_PATH = "sudoku_digitalisation/models/saved/cnn"
+MODEL_NAME = "32_64_128"
 OUTPUT_SIZE = 450
 
 class SudokuPredictions(BaseModel):
     predictions: List[List[int]]
 
 
-def load_model(model_path=MODEL_PATH, model_name=MODEL_NAME, output_size=OUTPUT_SIZE):
+def load_model(model_name=MODEL_NAME, output_size=OUTPUT_SIZE):
     print("Loading pre-trained model...")
     sudoku_height = output_size // 9
     cnn = CNN(input_shape=(sudoku_height, sudoku_height, 1), num_classes=10)
-    cnn.load(model_name, model_path)
+    cnn.load(model_name)
     return cnn
 
 
@@ -55,27 +54,20 @@ def predict_sudoku(cnn, image: Image.Image, output_size=OUTPUT_SIZE):
 cnn_model = load_model()
 
 
-@app.post("/predict/", description = "Sudoku digitizer endpoint. Upload picture of already cropped sudoku."
-                                    " Picture has to be .png, .jpg or .jpeg."
-                                    " Returns 9x9 matrix representing the uploaded sudoku with 0 being an empty space.",
-                        response_model = SudokuPredictions,
-                        response_description = "digitised version of uploaded sudoku, in the form of a 9x9 matrix.")
+@app.post("/predict/")
 async def predict(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
-        raise HTTPException(status_code=400, detail="Only image files (.png, .jpg, .jpeg) are accepted")
+    print("Received request")
 
     try:
         image_bytes = await file.read()
-        image = Image.open(BytesIO(image_bytes)).convert("L")  # convert to grayscale
+        print(f"Image bytes read: {len(image_bytes)} bytes")
 
+        image = Image.open(BytesIO(image_bytes)).convert("L")
+        print("Image successfully opened")
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to process image: {e}")
+        print(f"Image load error: {e}")
+        raise HTTPException(status_code=400, detail=f"Image error: {e}")
 
-    try:
-        result = predict_sudoku(cnn_model, image)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
-
-    return JSONResponse(content={"sudoku_grid new": result})
+    return {"message": "Image loaded successfully"}
 
 # Run with: uvicorn fastAPI:app --reload

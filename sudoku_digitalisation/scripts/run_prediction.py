@@ -20,9 +20,6 @@ def make_prediction(
     large_digits = find_labels_main(predictions)
     all_digits = find_labels_candidate(large_digits, digit_dataset, cnn)
 
-    show_image(sample_sudoku, "Test Image")
-    for idx, label in enumerate(all_digits):
-        show_image(digit_dataset[idx], f"Label: {label}")
     return all_digits
 
 
@@ -72,11 +69,3 @@ def preprocess(sample_sudoku: Union[Image.Image, Dict[str, Any]], preprocessor: 
         digit_dataset = digit_dataset['image']
     return digit_dataset
 
-
-def show_image(image: Union[Image.Image, Dict[str, Any]], title: str = None) -> None:
-    if isinstance(image, dict):
-        image = image['image']
-    plt.imshow(image, cmap="gray")
-    if title:
-        plt.title(title)
-    plt.show()
