@@ -58,7 +58,7 @@ class CNN:
     
     def _reshape_image_CNN(self, img: Image.Image) -> np.ndarray:
         '''
-        Reshapes single image to match input shape
+        Reshapes single image to match input shape.
         '''
         img_array = np.array(img)
         normalized_array = img_array.astype(np.float32) / 255.0
@@ -66,7 +66,7 @@ class CNN:
 
     def _reshape_data_CNN(self, image_list: List[Image.Image]) -> np.ndarray:
         '''
-        Reshapes a list of images to match input shape
+        Reshapes a list of images to match input shape.
         '''
         reshaped_data = np.zeros((
             len(image_list), self.input_shape[0], self.input_shape[1], 1
