@@ -5,7 +5,8 @@ from PIL import Image, ImageOps
 
 
 def save_image(image: Image.Image, type: str, name: str) -> None:
-    path = os.path.join("sudoku_digitalisation", "data", "viewable_images", type, name)
+    base_dir = os.path.dirname(__file__)
+    path = os.path.join(base_dir, '..', 'data', 'viewable_images', type, name)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     image.save(path)
 

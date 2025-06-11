@@ -9,6 +9,8 @@ from sudoku_digitalisation.models.CNN import CNN
 from pydantic import BaseModel
 from typing import List
 
+from sudoku_digitalisation.scripts.run_prediction import make_prediction
+
 app = FastAPI(
     title = "Sudoku digitizer",
     summary = "an API that takes in a sudoku and give the corresponding 9x9 representing the sudoku",
@@ -25,36 +27,25 @@ version = "alpha"
 )
 
 # Constants
-MODEL_PATH = "sudoku_cnn"
-OUTPUT_SIZE = 252
+MODEL_NAME = "32_64_128"
+OUTPUT_SIZE = 450
 
 class SudokuPredictions(BaseModel):
     predictions: List[List[int]]
 
 
-def load_model(model_path=MODEL_PATH, output_size=OUTPUT_SIZE):
+def load_model(model_name=MODEL_NAME, output_size=OUTPUT_SIZE):
     print("Loading pre-trained model...")
     sudoku_height = output_size // 9
     cnn = CNN(input_shape=(sudoku_height, sudoku_height, 1), num_classes=10)
-    cnn.load(model_path)
+    cnn.load(model_name)
     return cnn
 
 
 def predict_sudoku(cnn, image: Image.Image, output_size=OUTPUT_SIZE):
     print("Preprocessing and predicting...")
     preprocessor = SudokuPreprocessor(clip_limit=3, output_size=output_size)
-    _, digit_dataset = preprocessor.sudoku_preprocessing(image)
-
-    predictions = cnn.predict(digit_dataset)
-    sudoku_labels = []
-    dimension = int(np.sqrt(len(digit_dataset)))
-
-    for i in range(dimension):
-        row = []
-        for j in range(dimension):
-            label = int(np.argmax(predictions[j + (dimension * i)]))
-            row.append(label)
-        sudoku_labels.append(row)
+    sudoku_labels = make_prediction(image, preprocessor, cnn)
 
     return sudoku_labels
 
