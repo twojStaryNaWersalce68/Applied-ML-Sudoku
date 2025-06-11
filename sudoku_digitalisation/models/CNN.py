@@ -140,6 +140,7 @@ class CNN:
         '''
         Evaluates the model and returns metrics for comparison.
         '''
+        CELL_NUM = 81
         # Predict
         y_test = np.array(y_test)
         y_pred_probs = self.predict(X_test)
@@ -155,12 +156,23 @@ class CNN:
         classes = [str(i) for i in range(10)]
         report = classification_report(y_test, y_pred, target_names=classes, output_dict=True)
 
+        # Sudoku accuracy
+        num_sudokus = len(y_test)//CELL_NUM
+        correct_sudokus = 0
+        for i in range(num_sudokus):
+            start = i * CELL_NUM
+            end = start + CELL_NUM
+            if np.array_equal(y_pred[start:end], y_test[start:end]):
+                correct_sudokus += 1
+        correct_percent = correct_sudokus/num_sudokus
+
         return cm, {
             "test accuracy": test_accuracy,
+            "sudoku accuracy": correct_percent,
             "precision macro": report["macro avg"]["precision"],
             "recall macro": report["macro avg"]["recall"],
             "f1 macro": report["macro avg"]["f1-score"]
-        }
+        }, self.history
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
