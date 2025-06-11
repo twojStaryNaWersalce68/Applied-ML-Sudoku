@@ -10,11 +10,13 @@ from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreproces
 from datasets import Dataset
 
 
+##### Make sure not to do show image in here, otherwise you'll break fastAPI! #####
 def make_prediction(
         sample_sudoku: Union[Image.Image, Dict[str, Any]],
         preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor],
         cnn: CNN
         ) -> Union[List[int], List[List[int]]]:
+    """Finds the labels of a full sudoku."""
     digit_dataset = preprocess(sample_sudoku, preprocessor)
     predictions = cnn.predict(digit_dataset)
     large_digits = find_labels_main(predictions)
@@ -24,6 +26,7 @@ def make_prediction(
 
 
 def find_labels_main(predictions: np.ndarray) -> List[int]:
+    """Finds the labels of main (large) digits in the cells"""
     labels = []
     for prediction in predictions:
         label = np.argmax(prediction)
@@ -32,6 +35,7 @@ def find_labels_main(predictions: np.ndarray) -> List[int]:
 
 
 def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image], cnn: CNN) -> List[List[int]]:
+    """Finds the labels of the candidate digits in the empty cells and adds them to the dataset."""
     binary_cell_labels = []
     human_cell_labels = []
     for idx, cell_img in enumerate(cell_images):
@@ -63,6 +67,7 @@ def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image]
 
 
 def preprocess(sample_sudoku: Union[Image.Image, Dict[str, Any]], preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor]) -> List[Image.Image]:
+    """Preprocesses the given sudoku image."""
     _, digit_dataset = preprocessor.sudoku_preprocessing(sample_sudoku)
     if isinstance(sample_sudoku, dict):
         digit_dataset = Dataset.from_list(digit_dataset)
