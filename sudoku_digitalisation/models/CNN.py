@@ -1,5 +1,6 @@
 import os
 import keras
+import keras_tuner as kt
 import numpy as np
 from PIL import Image
 from typing import Tuple, List, Union
@@ -25,33 +26,44 @@ class CNN:
         self.model = self.build_model()
         self.history = None
 
-    def build_model(self) -> keras.models.Sequential:
+    def build_model(self, hp) -> keras.models.Sequential:
         '''
         Build the model
         '''
-        cnn = keras.models.Sequential()
+        input = keras.Input(shape=self.input_shape)
 
-        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Dropout(0.2))
+        hp_filters1 = hp.Choice('conv_filters_1', values=[8, 16, 32])
 
-        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Dropout(0.2))
+        conv1A = keras.layers.Conv2D(filters=hp_filters1, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu')(input)
+        maxpool1A = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1A)
+        conv1B = keras.layers.Conv2D(filters=hp_filters1, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu')(maxpool1A)
+        maxpool1B = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1B)
+        dropout1 = keras.layers.Dropout(0.2)(maxpool1B)
 
-        cnn.add(keras.layers.Flatten())
+        hp_filters2 = hp.Choice('conv_filters_2', values=[32, 64, 128])
 
-        cnn.add(keras.layers.Dense(units=128, activation='relu'))
-        cnn.add(keras.layers.Dropout(0.2))
+        conv2A = keras.layers.Conv2D(filters=hp_filters2, kernel_size=(3, 3), activation='relu')(dropout1)
+        maxpool2A = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2A)
+        conv2B = keras.layers.BD(filters=hp_filters2, kernel_size=(3, 3), activation='relu')(maxpool2A)
+        maxpool2B = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2B)
+        dropout2 = keras.layers.Dropout(0.2)(maxpool2B)
 
-        cnn.add(keras.layers.Dense(units=self.num_classes, activation='softmax'))
+        flatten = keras.layers.Flatten()(dropout2)
+        
+        hp_filters3 = hp.Choice('dense_units', values=[64, 128, 256])
 
-        cnn.compile(
-            optimizer='adam',
+        dense = keras.layers.Dense(units=hp_filters3, activation='relu')(flatten)
+        dropout3 = keras.layers.Dropout(0.2)(dense)
+
+        output = keras.layers.Dense(units=self.num_classes, activation='softmax')(dropout3)
+
+        model = keras.Model(inputs=input, outputs=output)
+
+        # Hyperparameters
+        hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
             loss='categorical_crossentropy',
             metrics=[
                 'accuracy',
@@ -59,7 +71,7 @@ class CNN:
                 keras.metrics.Recall(name='recall')
             ]
         )
-        return cnn
+        return model
     
     def _reshape_image_CNN(self, img: Image.Image) -> np.ndarray:
         '''
@@ -97,11 +109,31 @@ class CNN:
         X_val = self._reshape_data_CNN(X_val)
         y_val = keras.utils.to_categorical(np.array(y_val), self.num_classes)
 
+        tuner = kt.Hyperband(
+            self.build_model,
+            objective='val_accuracy',
+            max_epochs=40,
+            factor=3
+        )
+
         early_stopping = keras.callbacks.EarlyStopping(
             monitor='val_loss',
             patience=10,
             restore_best_weights=True
         )
+
+        tuner.search(
+            X_train, y_train,
+            validation_data=(X_val, y_val),
+            callbacks=[early_stopping]
+        )
+
+        # Get the optimal hyperparameters
+        best_hps= tuner.get_best_hyperparameters(1)[0]
+
+        # get the best model
+        best_model = tuner.get_best_models(1)[0]
+        self.model = best_model
 
         self.history = self.model.fit(
             X_train, y_train,
@@ -111,6 +143,7 @@ class CNN:
             validation_data=(X_val, y_val),
             callbacks=[early_stopping]
         )
+        print("Best hyperparameters:", best_hps.values)
 
     def predict(self, input: Union[Image.Image, List[Image.Image]]) -> np.ndarray:
         '''
