@@ -16,6 +16,15 @@ def get_test(preprocessor: DatasetPreprocessor):
 
     return X_test, y_test
 
+
+def get_binary_labels(preprocessor: DatasetPreprocessor):
+    """
+    Get the binary labels of the test set from the preprocessor.
+    """
+    y_raw_dataset = preprocessor.handler.datasets['raw']['test']['cells']
+    return y_raw_dataset
+
+
 def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, trained: bool):
     '''
     Evaluates the model's accuracy, precision, recall and F1
