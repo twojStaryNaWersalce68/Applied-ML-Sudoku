@@ -11,9 +11,9 @@ if __name__ == "__main__":
     TRAIN_CNN = False           # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
     GET_SVM = True             # if this is set to False, the SVM is not gotten
-    EVALUATE = True            # change to true if you want to run the evaluation
+    EVALUATE = False            # change to true if you want to run the evaluation
     COMPARISON = False          # change to True if you want to compare our CNN model to the SVM baseline
-    PREDICT = False              # change to true if you want to run the prediction
+    PREDICT = True              # change to true if you want to run the prediction
 
     CNN_NAME = '16x2_32x2_128'     # name for how you save and load CNN
     SVM_NAME = 'default'        # name for how you save and load SVM
@@ -40,11 +40,11 @@ if __name__ == "__main__":
     # prediction if we want but that would be more for the API
     if PREDICT:
         sudoku_test_set = preprocessor.handler.datasets['raw']['test']
-        sample_sudoku = sudoku_test_set[3]
+        sample_sudoku = sudoku_test_set['image'][3]
         prediction = make_prediction(sample_sudoku, preprocessor, cnn)
         for i in range(0, 81, 9):
             print(prediction[i:i+9])
-        sample_sudoku['image'].show()
+        sample_sudoku.show()
 
 
 
