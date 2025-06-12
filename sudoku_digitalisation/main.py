@@ -28,14 +28,14 @@ if __name__ == "__main__":
     # perform k-fold CV to get mean accuracy and variance for CNN and SVM
     if COMPARISON:
         compare_cnn_svm(preprocessor, k=5)
+
+    # evaluates selected models individually
     if EVALUATE:
+        # TEST AFTER TRAINING CNN
         evaluate_model(cnn, preprocessor, TRAIN_CNN)
         if GET_SVM:
             svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
             evaluate_model(svm, preprocessor, False)
-
-    if EVALUATE:
-        evaluate_model(cnn, preprocessor, TRAIN_CNN)
 
     # prediction if we want but that would be more for the API
     if PREDICT:
