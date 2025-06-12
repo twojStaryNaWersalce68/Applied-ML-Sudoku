@@ -26,6 +26,22 @@ class ImageConverter:
         clahe = cv2.createCLAHE(clipLimit=self.clip_limit)
         clahe_np = clahe.apply(image_np)
         return Image.fromarray(clahe_np)
+    
+    def apply_gaussian_blur(self, image: Image.Image, kernel_size: tuple = (5, 5)) -> Image.Image:
+        image_np = np.array(image)
+        blurred_np = cv2.GaussianBlur(image_np, kernel_size, 0)
+        return Image.fromarray(blurred_np)
+
+    def apply_adaptive_threshold(self, image: Image.Image) -> Image.Image:
+        # Has to be performed on a greyscale image.
+        grayscale_image = self.to_grayscale(image)
+        image_np = np.array(grayscale_image)
+        
+        binary_np = cv2.adaptiveThreshold(
+            image_np, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            cv2.THRESH_BINARY_INV, 11, 2
+        )
+        return Image.fromarray(binary_np)
 
 
 class ImageCropper:
