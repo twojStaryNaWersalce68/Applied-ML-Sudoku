@@ -4,7 +4,6 @@ from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
 from sudoku_digitalisation.scripts.run_comparison import show_cm
-from sklearn.metrics import ConfusionMatrixDisplay
 
 def get_test(preprocessor: DatasetPreprocessor):
     '''

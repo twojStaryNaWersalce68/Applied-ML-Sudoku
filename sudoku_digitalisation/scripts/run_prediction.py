@@ -1,8 +1,6 @@
-import cv2
 from PIL import Image
-import matplotlib.pyplot as plt
 import numpy as np
-from typing import Dict, Tuple, Union, Any, List
+from typing import Dict, Union, Any, List
 
 from sudoku_digitalisation.features.cell_splitter import CellSplitter
 from sudoku_digitalisation.models.CNN import CNN

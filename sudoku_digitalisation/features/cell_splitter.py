@@ -1,9 +1,8 @@
 import numpy as np
 from PIL import Image
-from typing import List, Dict, Any
+from typing import List
 import cv2
 from typing import Tuple
-from markdown.preprocessors import Preprocessor
 from tensorflow.python.ops.gen_array_ops import lower_bound
 
 

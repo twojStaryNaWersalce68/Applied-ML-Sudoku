@@ -7,8 +7,6 @@ from sudoku_digitalisation.features.image_operations import ImageConverter, Imag
 from sudoku_digitalisation.features.edge_detector import EdgeDetector
 from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
 from sudoku_digitalisation.features.dataset_handler import DatasetHandler, load_sudoku_dataset
-import matplotlib.pyplot as plt
-import cv2
 
 
 def get_preprocessor(

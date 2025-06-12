@@ -1,7 +1,7 @@
 from PIL import Image
 import cv2
 import numpy as np
-from sudoku_digitalisation.features.image_operations import ImageConverter, ImageCropper
+from sudoku_digitalisation.features.image_operations import ImageConverter
 
 
 class EdgeDetector:
