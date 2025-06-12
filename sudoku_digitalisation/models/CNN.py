@@ -23,7 +23,7 @@ class CNN:
         '''
         self.input_shape = input_shape
         self.num_classes = num_classes
-        self.model = self.build_model()
+        self.model = None
         self.history = None
 
     def build_model(self, hp) -> keras.models.Sequential:
