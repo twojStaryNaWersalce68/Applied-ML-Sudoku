@@ -9,6 +9,7 @@ from sklearn.metrics import (
     accuracy_score
     )
 
+CELL_NUM = 81
 
 class CNN:
     def __init__(
@@ -177,6 +178,7 @@ class CNN:
             "recall macro": report["macro avg"]["recall"],
             "f1 macro": report["macro avg"]["f1-score"]
         }, self.history
+
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
