@@ -1,7 +1,7 @@
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.scripts.run_training import get_model
 from sudoku_digitalisation.scripts.run_comparison import compare_cnn_svm
-from sudoku_digitalisation.scripts.run_evaluation import evaluate_model
+from sudoku_digitalisation.scripts.run_evaluation import evaluate_model, evaluate_edge_detection
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
@@ -10,9 +10,8 @@ if __name__ == "__main__":
     TRAIN_CNN = False           # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
     GET_SVM = True             # if this is set to False, the SVM is not gotten
-    EVALUATE = False            # change to true if you want to run the evaluation
+    EVALUATE = True            # change to true if you want to run the evaluation
     COMPARISON = False          # change to True if you want to compare our CNN model to the SVM baseline
-    PREDICT = True              # change to true if you want to run the prediction
 
     CNN_NAME = '16x2_32x2_128'     # name for how you save and load CNN
     SVM_NAME = 'default'        # name for how you save and load SVM
@@ -32,6 +31,7 @@ if __name__ == "__main__":
     if EVALUATE:
         # TEST AFTER TRAINING CNN
         evaluate_model(cnn, preprocessor, TRAIN_CNN)
+        evaluate_edge_detection(preprocessor)
         if GET_SVM:
             svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
             evaluate_model(svm, preprocessor, False)

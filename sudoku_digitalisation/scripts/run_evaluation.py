@@ -1,9 +1,37 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from typing import Union
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
 from sudoku_digitalisation.scripts.run_comparison import show_cm
+
+def compare_bbox(
+        true_bbox: np.ndarray,
+        pred_bbox: np.ndarray,
+        tolerance: int = 20
+        ) -> bool:
+    distances = np.linalg.norm(true_bbox - pred_bbox, axis=-1)
+    mean_distance = np.mean(distances)
+    return mean_distance <= tolerance
+
+def evaluate_edge_detection(preprocessor: DatasetPreprocessor) -> None:
+    prediction_correct = []
+    image_dataset = preprocessor.handler.datasets['raw']['train']['image']
+    label_dataset = preprocessor.handler.datasets['raw']['train']['keypoints']
+    for i in range(len(image_dataset)):
+        true_bbox = preprocessor.edge_detector.get_bounding_box(
+            image_dataset[i], label_dataset[i]
+            )
+        pred_bbox = preprocessor.edge_detector.get_bounding_box(
+            image_dataset[i]
+            )
+        if pred_bbox is None:
+            prediction_correct.append(False)
+        else:
+            prediction_correct.append(compare_bbox(true_bbox, pred_bbox))
+    accuracy = sum(prediction_correct) / len(prediction_correct) * 100
+    print(f"Edge detection accuracy: {accuracy}%")
 
 def get_test(preprocessor: DatasetPreprocessor):
     '''
