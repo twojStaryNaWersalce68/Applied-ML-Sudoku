@@ -1,7 +1,8 @@
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.scripts.run_training import get_model
 from sudoku_digitalisation.scripts.run_prediction import make_prediction
-from sudoku_digitalisation.scripts.run_evaluation import compare_cnn_svm, evaluate_model
+from sudoku_digitalisation.scripts.run_comparison import compare_cnn_svm
+from sudoku_digitalisation.scripts.run_evaluation import evaluate_model
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
@@ -32,6 +33,9 @@ if __name__ == "__main__":
         if GET_SVM:
             svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
             evaluate_model(svm, preprocessor, False)
+
+    if EVALUATE:
+        evaluate_model(cnn, preprocessor, TRAIN_CNN)
 
     # prediction if we want but that would be more for the API
     if PREDICT:

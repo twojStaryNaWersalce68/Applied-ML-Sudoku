@@ -1,4 +1,7 @@
 from keras import Sequential
+from keras.src.ops import threshold
+
+from sudoku_digitalisation.features.cell_splitter import CellSplitter
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor, SudokuPreprocessor
 from sudoku_digitalisation.features.dataset_handler import load_sudoku_dataset
 from sudoku_digitalisation.models.CNN import CNN
@@ -7,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 from PIL import Image
+import cv2
 
 
 def get_preprocessed_dataset(is_preprocessed: bool = False):
@@ -75,24 +79,41 @@ def predict_sudoku(cnn: Sequential, sudoku_sample: Image.Image):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='This program takes an optional argument for prediction. If no argument is given, the model is trained.')
-    parser.add_argument('path', nargs='?', help='Path to image for prediction. The image should be cropped to the Sudoku.')
-
-    test_image = None
-    args = parser.parse_args()
-    if args.path:
-        print(f"Argument received, digitizing sudoku")
-        train_model = False
-        try:
-            test_image = Image.open(args.path)
-        except Exception as e:
-            print(f"Failed to open image: {e}")
-    else:
-        print("No argument given, training model")
-        train_model = True
-
     preprocessor = get_preprocessed_dataset(is_preprocessed=True) # change this to False if the dataset hasn't been processed and saved
-    cnn = get_model(preprocessor, train_model)
+    cnn = get_model(preprocessor, False)
 
-    if test_image:
-        predict_sudoku(cnn, test_image)
+    sudoku_sample = Image.open(r"C:\Users\Tabea\Pictures\sudoku_small_numbers1.jpg")
+    plt.imshow(sudoku_sample, cmap="gray")
+    plt.show()
+    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=450)
+    _, digit_dataset = preprocessor.sudoku_preprocessing(sudoku_sample)
+
+    for idx in range(81):
+    #idx = 3
+        tiny_digits = CellSplitter.get_candidate_digits(digit_dataset[idx])
+            #get_tiny_digits(digit_dataset[idx])) # 6 3 8/16 1 1
+
+        if len(tiny_digits) > 0:
+            predictions = cnn.predict(tiny_digits)
+            cell_labels_binary = [0] * 10  # format for computer
+            for i, prediction in enumerate(predictions):
+                label = np.argmax(prediction)
+                #print(label)
+                #plt.imshow(tiny_digits[i], cmap="gray")
+                #plt.title(label)
+                #plt.show()
+                if 0 <= label <= 9:
+                    cell_labels_binary[label] = 1
+            #print(cell_labels_binary)
+
+            cell_labels = []  # format for humans
+            for i in range(len(cell_labels_binary)):
+                if cell_labels_binary[i] == 1:
+                    cell_labels.append(i)
+            print(idx, cell_labels)
+            plt.imshow(digit_dataset[idx], cmap="gray")
+            plt.title(f"{idx}: {cell_labels}")
+            plt.show()
+
+        else:
+            print("no digits found")
