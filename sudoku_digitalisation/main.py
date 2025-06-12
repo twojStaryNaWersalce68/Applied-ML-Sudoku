@@ -1,6 +1,5 @@
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.scripts.run_training import get_model
-from sudoku_digitalisation.scripts.run_prediction import make_prediction
 from sudoku_digitalisation.scripts.run_comparison import compare_cnn_svm
 from sudoku_digitalisation.scripts.run_evaluation import evaluate_model
 
