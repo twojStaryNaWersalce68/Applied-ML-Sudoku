@@ -50,14 +50,15 @@ python -m sudoku_digitalisation.main
 
 Running it in a different way may result in a ModuleNotFoundError.
 
-In order to change what running the file does, open the file [sudoku_digitalisation/main.py](sudoku_digitalisation/main.py). Within this file, from lines 10 to 15, you will find booleans that you can set to true or false depending on what you want the code to run. What each boolean does
+In order to change what running the file does, open the file [sudoku_digitalisation/main.py](sudoku_digitalisation/main.py). Within this file, from lines 10 to 16, you will find booleans that you can set to true or false depending on what you want the code to run. What each boolean does
 
 - IS_PREPROCESSED: If the dataset is not already on your computer (it does not come with the repo), set this to false and it will preprocess the data for you and save it locally, after that you can set it to true for the rest of your runs.
-- TRAIN_CNN: This will train a new CNN using the preprocessed data. It will save the CNN under sudoku_digitalisation/models/saved under the name that is set in CNN_NAME on line 17.
-- TRAIN_SVM: This will train a new SVM using the preprocessed data. It will save the SVM under sudoku_digitalisation/models/saved under the name that is set in SVM_NAME on line 18.
+- TRAIN_CNN: This will train a new CNN using the preprocessed data. It will save the CNN under sudoku_digitalisation/models/saved under the name that is set in CNN_NAME on line 18.
+- TRAIN_SVM: This will train a new SVM using the preprocessed data. It will save the SVM under sudoku_digitalisation/models/saved under the name that is set in SVM_NAME on line 19.
 - GET_SVM: This loads a preexisting SVM and uses that instead of training a new one.
+- COMPARE: This compares the CNN model to the SVM model by comparing the mean and variance
 - EVALUATE: Evaluates the CNN model, either the one that was just trained or loads the one saved under sudoku_digitalisation/models/saved, if TRAIN_CNN is set to false and there is no saved model, it will throw an error.
-- PREDICT: Digitises the sudoku given to it.
+- PREDICT: Extracts and outputs a sudoku from the test set.
 
 ### Running the streamlit prototype
 
