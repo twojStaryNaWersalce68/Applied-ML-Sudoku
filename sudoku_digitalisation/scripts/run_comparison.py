@@ -31,8 +31,10 @@ def kfold_evaluation(
     dim = preprocessor.cropper.output_size // 9
 
     for train_index, test_index in kf.split(images):
-        X_train_full, X_test = images[train_index], images[test_index]
-        y_train_full, y_test = labels[train_index], labels[test_index]
+        X_train_full = images[train_index]
+        y_train_full = labels[train_index]
+        X_test = images[test_index]
+        y_test = labels[test_index]
 
         if model_type == 'cnn':
             val_size = int(len(X_train_full) * val_split)
@@ -49,7 +51,7 @@ def kfold_evaluation(
         else:
             raise ValueError(f"Unknown model_type '{model_type}'. Expected 'cnn' or 'svm'.")
 
-        cm, metrics = model.evaluate(X_test, y_test)
+        cm, metrics, _ = model.evaluate(X_test, y_test)
         if cm_total is None:
             cm_total = cm
         else:
@@ -60,11 +62,16 @@ def kfold_evaluation(
 
 
 def compute_mean_std(results: List[Dict[str, int]]) -> Dict[str, Dict[str, float]]:
+    '''
+    Computes the mean and standard deviation for a list of Dicts containing metrics
+    '''
     metric_names = results[0].keys()
-
     summary = {}
     for metric in metric_names:
-        values = np.array([fold[metric] for fold in results])
+        values = []
+        for fold in results:
+            values.append(fold[metric])
+        values = np.array(values)
         summary[metric] = {
             "mean": float(np.mean(values)),
             "std": float(np.std(values))
@@ -76,6 +83,9 @@ def compare_cnn_svm(
         preprocessor: DatasetPreprocessor,
         k: int
         ) -> None:
+    '''
+    Prints a table for the mean and std for the CNN and SVM
+    '''
     cnn_cm, cnn_metrics = kfold_evaluation('cnn', preprocessor, k)
     svm_cm, svm_metrics = kfold_evaluation('svm', preprocessor, k)
 
@@ -94,6 +104,9 @@ def compare_cnn_svm(
     
 
 def show_cm(cm):
+    '''
+    Function to show a confusion matrix
+    '''
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot(cmap='viridis', values_format='d')
     plt.title("Confusion Matrix")

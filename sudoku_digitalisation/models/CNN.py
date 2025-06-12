@@ -9,6 +9,7 @@ from sklearn.metrics import (
     accuracy_score
     )
 
+CELL_NUM = 81
 
 class CNN:
     def __init__(
@@ -32,8 +33,12 @@ class CNN:
 
         cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'))
+        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
         cnn.add(keras.layers.Dropout(0.2))
 
+        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
         cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
         cnn.add(keras.layers.Dropout(0.2))
@@ -107,24 +112,6 @@ class CNN:
             callbacks=[early_stopping]
         )
 
-        # # Accuracy plot over time
-        # plt.plot(history.history['accuracy'], label='Training Accuracy')
-        # plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
-        # plt.xlabel('Epochs')
-        # plt.ylabel('Accuracy')
-        # plt.legend()
-        # plt.title('Training vs Validation Accuracy')
-        # plt.show()
-
-        # # Loss plot over time
-        # plt.plot(history.history['loss'], label='Training Loss')
-        # plt.plot(history.history['val_loss'], label='Validation Loss')
-        # plt.xlabel('Epochs')
-        # plt.ylabel('Loss')
-        # plt.legend()
-        # plt.title('Training vs Validation Loss')
-        # plt.show()
-
     def predict(self, input: Union[Image.Image, List[Image.Image]]) -> np.ndarray:
         '''
         Predict value(s) using the trained CNN
@@ -173,6 +160,7 @@ class CNN:
             "recall macro": report["macro avg"]["recall"],
             "f1 macro": report["macro avg"]["f1-score"]
         }, self.history
+
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:

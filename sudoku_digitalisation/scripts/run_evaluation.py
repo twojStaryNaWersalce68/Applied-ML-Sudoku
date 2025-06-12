@@ -1,8 +1,9 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from typing import Dict, Tuple, Union, Any, List
+from typing import Union
 from sudoku_digitalisation.models.CNN import CNN
+from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
+from sudoku_digitalisation.scripts.run_comparison import show_cm
 from sklearn.metrics import ConfusionMatrixDisplay
 
 def get_test(preprocessor: DatasetPreprocessor):
@@ -16,33 +17,30 @@ def get_test(preprocessor: DatasetPreprocessor):
 
     return X_test, y_test
 
-def evaluate_model(cnn: CNN, preprocessor: DatasetPreprocessor, trained: bool):
+def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, trained: bool):
     '''
     Evaluates the model's accuracy, precision, recall and F1
     '''
     X_test, y_test = get_test(preprocessor)
 
-    cm, info, history = cnn.evaluate(X_test, y_test)
+    cm, info, history = model.evaluate(X_test, y_test)
 
     # Confusion matrix
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
-    disp.plot(cmap='viridis', values_format='d')
-    plt.title('Confusion Matrix')
-    plt.show()
+    show_cm(cm)
 
     # Per class accuracy
     class_accuracies = cm.diagonal() / cm.sum(axis=1)
     for i, acc in enumerate(class_accuracies):
-        print(f"Accuracy for Class {i}: {acc:.4f}")
-    print(f"Accuracy for test set: {info['test accuracy']:.4f}")
+        print(f"Accuracy for digit {i}: {acc:.4f}")
+    print(f"Test set accuracy: {info['test accuracy']:.4f}")
 
     # Per class precision, recall and F1
-    print(f"The class precision is: {info['precision macro']:.4f}")
-    print(f"The recall is: {info['recall macro']:.4f}")
-    print(f"The f1 score is: {info['f1 macro']:.4f}")
+    print(f"Test set precision: {info['precision macro']:.4f}")
+    print(f"Test set recall: {info['recall macro']:.4f}")
+    print(f"Test set F1 score: {info['f1 macro']:.4f}")
 
     # accuracy on sudokus
-    print(f"accuracy of fully correct sudokus: {info['sudoku accuracy']}")
+    print(f"Accuracy for fully correct sudokus: {info['sudoku accuracy']}")
 
     if trained:
         # Accuracy plot over time
