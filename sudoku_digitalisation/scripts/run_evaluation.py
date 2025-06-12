@@ -3,6 +3,7 @@ from typing import Union
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
+from sudoku_digitalisation.scripts.run_comparison import show_cm
 from sklearn.metrics import ConfusionMatrixDisplay
 
 def get_test(preprocessor: DatasetPreprocessor):
@@ -25,10 +26,7 @@ def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, tr
     cm, info, history = model.evaluate(X_test, y_test)
 
     # Confusion matrix
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
-    disp.plot(cmap='viridis', values_format='d')
-    plt.title('Confusion Matrix')
-    plt.show()
+    show_cm(cm)
 
     # Per class accuracy
     class_accuracies = cm.diagonal() / cm.sum(axis=1)
