@@ -1,9 +1,8 @@
+import numpy as np
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.scripts.run_training import get_model
-from sudoku_digitalisation.scripts.run_prediction import make_prediction
 from sudoku_digitalisation.scripts.run_comparison import compare_cnn_svm
-from sudoku_digitalisation.scripts.run_evaluation import evaluate_model, get_binary_labels
-import numpy as np
+from sudoku_digitalisation.scripts.run_evaluation import evaluate_model, get_binary_labels, evaluate_edge_detection
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
@@ -14,7 +13,6 @@ if __name__ == "__main__":
     GET_SVM = False             # if this is set to False, the SVM is not gotten
     EVALUATE = True            # change to true if you want to run the evaluation
     COMPARISON = False          # change to True if you want to compare our CNN model to the SVM baseline
-    PREDICT = False          # change to true if you want to run the prediction
 
     CNN_NAME = '16x2_32x2_128'     # name for how you save and load CNN
     SVM_NAME = 'default'        # name for how you save and load SVM
@@ -34,15 +32,7 @@ if __name__ == "__main__":
     if EVALUATE:
         # TEST AFTER TRAINING CNN
         evaluate_model(cnn, preprocessor, TRAIN_CNN)
+        evaluate_edge_detection(preprocessor)
         if GET_SVM:
             svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
             evaluate_model(svm, preprocessor, False)
-
-    # prediction if we want but that would be more for the API
-    if PREDICT:
-        sudoku_test_set = preprocessor.handler.datasets['raw']['test']
-        sample_sudoku = sudoku_test_set['image'][3]
-        prediction = make_prediction(sample_sudoku, preprocessor, cnn)
-        for i in range(0, 81, 9):
-            print(prediction[i:i+9])
-        sample_sudoku.show()

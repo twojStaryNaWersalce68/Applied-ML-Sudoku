@@ -1,9 +1,6 @@
-import cv2
 from PIL import Image
-import matplotlib.pyplot as plt
 import numpy as np
 from typing import Dict, Tuple, Union, Any, List
-
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor, SudokuPreprocessor
 from datasets import Dataset
@@ -15,26 +12,31 @@ def make_prediction(
         preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor],
         cnn: CNN
         ) -> Union[List[int], List[List[int]]]:
-    """Finds the labels of a full sudoku."""
+    '''
+    Full prediction pipeline for a sudoku
+    '''
     digit_dataset = preprocess(sample_sudoku, preprocessor)
     predictions = cnn.predict(digit_dataset)
     large_digits = find_labels_main(predictions)
     all_digits = cnn.predict_candidate(large_digits, digit_dataset)
-
     return all_digits
 
 
 def find_labels_main(predictions: np.ndarray) -> List[int]:
-    """Finds the labels of main (large) digits in the cells"""
+    '''
+    Finds the labels of solution digits in the cells
+    '''
     labels = []
     for prediction in predictions:
         label = np.argmax(prediction)
         labels.append(int(label))
     return labels
 
-
+ 
 def preprocess(sample_sudoku: Union[Image.Image, Dict[str, Any]], preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor]) -> List[Image.Image]:
-    """Preprocesses the given sudoku image."""
+    '''
+    Preprocesses the given sudoku image.
+    '''
     _, digit_dataset = preprocessor.sudoku_preprocessing(sample_sudoku)
     if isinstance(sample_sudoku, dict):
         digit_dataset = Dataset.from_list(digit_dataset)

@@ -27,7 +27,6 @@ def get_model(
             print("Getting CNN...")
             cnn.load(model_name)
         return cnn
-
     elif model_type == 'svm':
         svm = SVM(input_shape=(dim, dim), verbose=True)
         if train_model:
@@ -39,7 +38,6 @@ def get_model(
             print("Getting SVM...")
             svm.load(model_name)
         return svm
-
     else:
         raise ValueError(f"Unknown model_type '{model_type}'. Expected 'cnn' or 'svm'.")
 

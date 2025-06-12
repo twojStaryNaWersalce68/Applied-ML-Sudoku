@@ -7,8 +7,6 @@ from sudoku_digitalisation.features.image_operations import ImageConverter, Imag
 from sudoku_digitalisation.features.edge_detector import EdgeDetector
 from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
 from sudoku_digitalisation.features.dataset_handler import DatasetHandler, load_sudoku_dataset
-import matplotlib.pyplot as plt
-import cv2
 
 
 def get_preprocessor(
@@ -69,6 +67,7 @@ class SudokuPreprocessor:
         if isinstance(sudoku, Image.Image):
             preprocessed_img = self.convert_crop_image(sudoku)
             digit_list = SudokuSplitter.split_image(preprocessed_img)
+            preprocessed_img.show()
             return preprocessed_img, digit_list
         elif isinstance(sudoku, dict):
             preprocessed_dp = self.convert_crop_datapoint(sudoku)

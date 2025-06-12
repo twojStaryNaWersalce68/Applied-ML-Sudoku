@@ -1,15 +1,12 @@
-import os
-import numpy as np
-from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
 from PIL import Image
 from io import BytesIO
-from sudoku_digitalisation.features.sudoku_preprocessing import SudokuPreprocessor
-from sudoku_digitalisation.models.CNN import CNN
 from pydantic import BaseModel
 from typing import List
-
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from sudoku_digitalisation.scripts.run_prediction import make_prediction
+from sudoku_digitalisation.scripts.run_training import get_model
+from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 
 app = FastAPI(
     title = "Sudoku digitizer",
@@ -21,8 +18,10 @@ It takes these images by cropping sudokus that were fed to it.
 The API takes in an already cropped image of a sudoku and returns a 9x9 matrix representing the numbers inside the sudoku, 0 means an empty square.
 
 ## Limitations
-The model cannot predict the small numbers that are used in sudokus, 
-however these should not impact the prediction.""",
+The sudoku goes through the process of edge detection, and predictions with 
+the CNN, and as there are 81 square in a sudoku it is pretty hard to get fully
+correct sudokus. Either the edge detection goes wrong, or there is one digit
+the CNN doesn't classify properly.""",
 version = "alpha"
 )
 
@@ -33,32 +32,16 @@ OUTPUT_SIZE = 450
 class SudokuPredictions(BaseModel):
     predictions: List[List[int]]
 
-
-def load_model(model_name=MODEL_NAME, output_size=OUTPUT_SIZE):
-    print("Loading pre-trained model...")
-    sudoku_height = output_size // 9
-    cnn = CNN(input_shape=(sudoku_height, sudoku_height, 1), num_classes=10)
-    cnn.load(model_name)
-    return cnn
-
-
-def predict_sudoku(cnn, image: Image.Image, output_size=OUTPUT_SIZE):
-    print("Preprocessing and predicting...")
-    preprocessor = SudokuPreprocessor(clip_limit=3, output_size=output_size)
-    sudoku_labels = make_prediction(image, preprocessor, cnn)
-
-    return sudoku_labels
-
-
 # Load the model once when FastAPI starts
-cnn_model = load_model()
+preprocessor = get_preprocessor(output_size=OUTPUT_SIZE, is_preprocessed=True)
+cnn_model = get_model(False, 'cnn', MODEL_NAME, preprocessor)
 
 
 @app.post("/predict/", description = "Sudoku digitizer endpoint. Upload picture of already cropped sudoku."
                                     " Picture has to be .png, .jpg or .jpeg."
-                                    " Returns 9x9 matrix representing the uploaded sudoku with 0 being an empty space.",
+                                    " Returns list of lists, where each list represents a cell.",
                         response_model = SudokuPredictions,
-                        response_description = "digitised version of uploaded sudoku, in the form of a 9x9 matrix.")
+                        response_description = "Digitised version of uploaded sudoku, in the form of a 9x9 matrix.")
 async def predict(file: UploadFile = File(...)):
     if not file.filename.lower().endswith((".png", ".jpg", ".jpeg")):
         raise HTTPException(status_code=400, detail="Only image files (.png, .jpg, .jpeg) are accepted")
@@ -71,7 +54,7 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Failed to process image: {e}")
 
     try:
-        result = predict_sudoku(cnn_model, image)
+        result = make_prediction(image, preprocessor, cnn_model)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 

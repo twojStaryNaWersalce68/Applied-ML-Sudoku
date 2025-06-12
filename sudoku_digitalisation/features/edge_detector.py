@@ -1,7 +1,7 @@
 from PIL import Image
 import cv2
 import numpy as np
-from sudoku_digitalisation.features.image_operations import ImageConverter, ImageCropper
+from sudoku_digitalisation.features.image_operations import ImageConverter
 
 
 class EdgeDetector:
@@ -30,9 +30,8 @@ class EdgeDetector:
     
     def _get_keypoints_bb(self, image):
         """
-        Getts the bounding box keypoints.
+        Gets the bounding box keypoints using edge detection.
         """ 
-        print("EDDDDD")
         # Works for both PIL and NumPY array
         if isinstance(image, Image.Image):
             original_image = cv2.cvtColor(np.array(image.convert("RGB")), cv2.COLOR_RGB2BGR)
