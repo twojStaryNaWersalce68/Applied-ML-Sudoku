@@ -36,15 +36,3 @@ if __name__ == "__main__":
         if GET_SVM:
             svm = get_model(TRAIN_SVM, 'svm', SVM_NAME, preprocessor)
             evaluate_model(svm, preprocessor, False)
-
-    # prediction if we want but that would be more for the API
-    if PREDICT:
-        sudoku_test_set = preprocessor.handler.datasets['raw']['test']
-        sample_sudoku = sudoku_test_set['image'][3]
-        prediction = make_prediction(sample_sudoku, preprocessor, cnn)
-        for i in range(0, 81, 9):
-            print(prediction[i:i+9])
-        sample_sudoku.show()
-
-
-
