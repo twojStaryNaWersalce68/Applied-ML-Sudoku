@@ -1,10 +1,13 @@
 import os
 import keras
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image
 from typing import Tuple, List, Union
-from sklearn.metrics import confusion_matrix, classification_report, ConfusionMatrixDisplay
+from sklearn.metrics import (
+    confusion_matrix,
+    classification_report,
+    accuracy_score
+    )
 
 CELL_NUM = 81
 
@@ -19,10 +22,10 @@ class CNN:
         '''
         self.input_shape = input_shape
         self.num_classes = num_classes
-        self.model = self._build_model()
+        self.model = self.build_model()
         self.history = None
 
-    def _build_model(self) -> keras.models.Sequential:
+    def build_model(self) -> keras.models.Sequential:
         '''
         Build the model
         '''
@@ -30,14 +33,17 @@ class CNN:
 
         cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'))
+        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Dropout(0.2))
 
         cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
         cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
+        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
+        cnn.add(keras.layers.Dropout(0.2))
 
         cnn.add(keras.layers.Flatten())
-
-        cnn.add(keras.layers.Dense(units=128, activation='relu'))
-        cnn.add(keras.layers.Dropout(0.2))
 
         cnn.add(keras.layers.Dense(units=128, activation='relu'))
         cnn.add(keras.layers.Dropout(0.2))
@@ -80,7 +86,7 @@ class CNN:
             y_train: List[int],
             X_val: List[Image.Image],
             y_val: List[int],
-            verbose: int
+            verbose: int = 1
             ) -> None:
         '''
         Train CNN using the training and validation data
@@ -106,6 +112,24 @@ class CNN:
             callbacks=[early_stopping]
         )
 
+        # # Accuracy plot over time
+        # plt.plot(history.history['accuracy'], label='Training Accuracy')
+        # plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Accuracy')
+        # plt.legend()
+        # plt.title('Training vs Validation Accuracy')
+        # plt.show()
+
+        # # Loss plot over time
+        # plt.plot(history.history['loss'], label='Training Loss')
+        # plt.plot(history.history['val_loss'], label='Validation Loss')
+        # plt.xlabel('Epochs')
+        # plt.ylabel('Loss')
+        # plt.legend()
+        # plt.title('Training vs Validation Loss')
+        # plt.show()
+
     def predict(self, input: Union[Image.Image, List[Image.Image]]) -> np.ndarray:
         '''
         Predict value(s) using the trained CNN
@@ -117,40 +141,27 @@ class CNN:
             input = self._reshape_data_CNN(input)
         return self.model.predict(input)
     
-    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> None:
+    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> dict:
         '''
-        Evaluates the model's accuracy, precision, recall and F1
+        Evaluates the model and returns metrics for comparison.
         '''
-        X_test = self._reshape_data_CNN(X_test)
+        CELL_NUM = 81
+        # Predict
         y_test = np.array(y_test)
-        test_labels = keras.utils.to_categorical(y_test, self.num_classes)
-
-        # Convert one-hot encoded data back to normal labels
-        y_pred_probs = self.model.predict(X_test)
+        y_pred_probs = self.predict(X_test)
         y_pred = np.argmax(y_pred_probs, axis=1)
 
-        # Evaluate the cnn on the test set
-        test_loss, test_accuracy, _, _ = self.model.evaluate(X_test, test_labels, verbose=2)
-        print(f"Test loss: {test_loss}")
-        print(f"Test accuracy: {test_accuracy}")
+        # Test accuracy
+        test_accuracy = accuracy_score(y_test, y_pred)
 
         # Confusion matrix
         cm = confusion_matrix(y_test, y_pred)
-        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=range(len(cm)))
-        disp.plot(cmap='viridis', values_format='d')
-        plt.title('Confusion Matrix')
-        plt.show()
 
-        # Per class accuracy
-        class_accuracies = cm.diagonal() / cm.sum(axis=1)
-        for i, acc in enumerate(class_accuracies):
-            print(f"Accuracy for Class {i}: {acc:.4f}")
+        # Classification report
+        classes = [str(i) for i in range(10)]
+        report = classification_report(y_test, y_pred, target_names=classes, output_dict=True)
 
-        # Per class precision, recall and F1
-        report = classification_report(y_test, y_pred, target_names=[f'Class {i}' for i in range(10)])
-        print(report)
-
-        # accuracy on sudokus
+        # Sudoku accuracy
         num_sudokus = len(y_test)//CELL_NUM
         correct_sudokus = 0
         for i in range(num_sudokus):
@@ -159,35 +170,27 @@ class CNN:
             if np.array_equal(y_pred[start:end], y_test[start:end]):
                 correct_sudokus += 1
         correct_percent = correct_sudokus/num_sudokus
-        print(f"accuracy of fully correct sudokus: {correct_percent}")
 
-        # Accuracy plot over time
-        plt.plot(self.history.history['accuracy'], label='Training Accuracy')
-        plt.plot(self.history.history['val_accuracy'], label='Validation Accuracy')
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.legend()
-        plt.title('Training vs Validation Accuracy')
-        plt.show()
+        return cm, {
+            "test accuracy": test_accuracy,
+            "sudoku accuracy": correct_percent,
+            "precision macro": report["macro avg"]["precision"],
+            "recall macro": report["macro avg"]["recall"],
+            "f1 macro": report["macro avg"]["f1-score"]
+        }, self.history
 
-        # Loss plot over time
-        plt.plot(self.history.history['loss'], label='Training Loss')
-        plt.plot(self.history.history['val_loss'], label='Validation Loss')
-        plt.xlabel('Epochs')
-        plt.ylabel('Loss')
-        plt.legend()
-        plt.title('Training vs Validation Loss')
-        plt.show()
 
     def save(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved")
+            base_dir = os.path.dirname(__file__)
+            path = os.path.join(base_dir, "saved", "cnn")
         os.makedirs(path, exist_ok=True)
         save_path = os.path.join(path, f"{name}.keras")
         self.model.save(save_path)
 
     def load(self, name: str, path: str=None) -> None:
         if path is None:
-            path = os.path.join("sudoku_digitalisation", "models", "saved")
+            base_dir = os.path.dirname(__file__)
+            path = os.path.join(base_dir, "saved", "cnn")
         load_path = os.path.join(path, f"{name}.keras")
         self.model = keras.models.load_model(load_path)

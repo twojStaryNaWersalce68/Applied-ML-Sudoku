@@ -10,9 +10,10 @@ def load_sudoku_dataset(path=None, hugface=False) -> 'DatasetHandler':
         dataset = load_dataset(path)
         return DatasetHandler(dataset=dataset)
 
-    path = path if path is not None else os.path.join(
-        "sudoku_digitalisation", "data", "datasets"
-        )
+    if path is None:
+        base_dir = os.path.dirname(__file__)
+        path = os.path.join(base_dir, '..', 'data', 'datasets')
+        print(path)
     raw_path = os.path.join(path, "raw")
     prepro_path = os.path.join(path, "preprocessed")
     digits_path = os.path.join(path, "digits")
@@ -39,9 +40,10 @@ class DatasetHandler:
             "preprocessed": preprocessed_dataset,
             "digits": digits_dataset
         }
-        self.save_path = save_path if save_path is not None else os.path.join(
-            "sudoku_digitalisation", "data", "datasets"
-            )
+        if save_path is None:
+            base_dir = os.path.dirname(__file__)
+            save_path = os.path.join(base_dir, '..', 'data', 'datasets')
+        self.save_path = save_path
 
     def save_dataset(self, type: str, path: str = None) -> None:
         if path is not None:
