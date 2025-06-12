@@ -49,7 +49,7 @@ def kfold_evaluation(
         else:
             raise ValueError(f"Unknown model_type '{model_type}'. Expected 'cnn' or 'svm'.")
 
-        cm, metrics = model.evaluate(X_test, y_test)
+        cm, metrics, _ = model.evaluate(X_test, y_test)
         if cm_total is None:
             cm_total = cm
         else:
