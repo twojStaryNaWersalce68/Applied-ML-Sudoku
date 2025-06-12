@@ -67,6 +67,7 @@ class SudokuPreprocessor:
         if isinstance(sudoku, Image.Image):
             preprocessed_img = self.convert_crop_image(sudoku)
             digit_list = SudokuSplitter.split_image(preprocessed_img)
+            preprocessed_img.show()
             return preprocessed_img, digit_list
         elif isinstance(sudoku, dict):
             preprocessed_dp = self.convert_crop_datapoint(sudoku)

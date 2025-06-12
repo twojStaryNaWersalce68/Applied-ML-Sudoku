@@ -1,7 +1,6 @@
 from PIL import Image
 import numpy as np
 from typing import Dict, Union, Any, List
-
 from sudoku_digitalisation.features.cell_splitter import CellSplitter
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor, SudokuPreprocessor
