@@ -44,6 +44,7 @@ class SudokuPreprocessor:
         self.cropper = ImageCropper(output_size)
 
     def convert_crop_image(self, image: Image.Image, keypoints: np.ndarray=None) -> Image.Image:
+        """Initiates the right cropping procedure based on whether the Image has keypoints given or not."""
         bbox = self.edge_detector.get_bounding_box(image, keypoints)
         if bbox is None:
             print("Warning: Could not find a bounding box. Cannot crop image.")
@@ -55,6 +56,7 @@ class SudokuPreprocessor:
         return final_processed_image
 
     def convert_crop_datapoint(self, dp: Dict[str, Any]) -> Dict[str, Any]:
+        """Converts a data structure, which holds images and keypoints, to one only holding (cropped) images."""
         dp = dp.copy()
         dp['image'] = self.convert_crop_image(dp['image'], dp['keypoints'])
         return dp
@@ -63,6 +65,7 @@ class SudokuPreprocessor:
             self,
             sudoku: Union[Image.Image, Dict[str, Any]]
             ) -> Tuple[Union[Image.Image, Dict[str, Any]], Union[List[Image.Image], Dataset]]:
+        """Preprocesses one Sudoku. This can either be given on its own or with keypoints."""
         if isinstance(sudoku, Image.Image):
             preprocessed_img = self.convert_crop_image(sudoku)
             digit_list = SudokuSplitter.split_image(preprocessed_img)
@@ -88,6 +91,7 @@ class DatasetPreprocessor(SudokuPreprocessor):
         super().__init__(clip_limit, output_size)
         
     def split_preprocessing(self, split: str) -> Tuple[Dataset, Dataset]:
+        """Preprocesses one split (test, train, validation) of the dataset."""
         preprocessed_list = []
         digits_list = []
         for datapoint in tqdm(self.handler.datasets['raw'][split], desc=f"Preprocessing {split} split"):
@@ -97,6 +101,7 @@ class DatasetPreprocessor(SudokuPreprocessor):
         return Dataset.from_list(preprocessed_list), Dataset.from_list(digits_list)
 
     def dataset_preprocessing(self) -> Tuple[DatasetDict, DatasetDict]:
+        """Preprocesses the dataset."""
         preprocessed_datasets = {}
         digits_datasets = {}
         for split in self.handler.datasets['raw']:

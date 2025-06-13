@@ -4,6 +4,9 @@ from typing import List, Dict, Any
 
 
 class SudokuSplitter:
+    """
+    Handles splitting the sudokus and their labels into their 81 cells.
+    """
     @staticmethod
     def split_image(image: Image.Image) -> List[Image.Image]:
         """Splits the image into 81 cells."""
@@ -41,6 +44,7 @@ class SudokuSplitter:
     
     @staticmethod
     def split_datapoint(sudoku: Dict) -> List[Dict[str, Any]]:
+        """Initializes splitting a datapoint (both image and cells)."""
         sudoku_ds = []
         digit_images = SudokuSplitter.split_image(sudoku['image'])
         digit_labels = SudokuSplitter.split_labels(sudoku['cells'])

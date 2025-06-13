@@ -5,11 +5,15 @@ from sudoku_digitalisation.features.image_operations import ImageConverter
 
 
 class EdgeDetector:
+    """
+    Handles the edge detection algorithm to find the bounding boxes around the sudokus without given keypoints.
+    """
 
     def __init__(self) -> None:
         pass
 
-    def _known_keypoints_bb(self, keypoints):
+    def _known_keypoints_bb(self, keypoints) -> np.ndarray | None:
+        """Reformats the bounding box to the correct format for the cropping."""
         bounding_box = np.array([
                 [keypoints[0], keypoints[1]],  # top left
                 [keypoints[2], keypoints[3]],  # bottom left
@@ -23,12 +27,13 @@ class EdgeDetector:
             image: Image.Image,
             keypoints: np.ndarray=None
             ) -> np.ndarray:
+        """Retrieves the bounding box around the sudokus with given keypoints or by finding keypoints."""
         if keypoints != None:
             return self._known_keypoints_bb(keypoints)
         else:
             return self._get_keypoints_bb(image)
     
-    def _get_keypoints_bb(self, image):
+    def _get_keypoints_bb(self, image) -> np.ndarray | None:
         """
         Gets the bounding box keypoints using edge detection.
         """ 
