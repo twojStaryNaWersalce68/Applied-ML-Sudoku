@@ -1,9 +1,6 @@
-import cv2
 from PIL import Image
-import matplotlib.pyplot as plt
 import numpy as np
-from typing import Dict, Tuple, Union, Any, List
-
+from typing import Dict, Union, Any, List
 from sudoku_digitalisation.features.cell_splitter import CellSplitter
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor, SudokuPreprocessor
@@ -13,8 +10,9 @@ from datasets import Dataset
 ##### Make sure not to do show image in here, otherwise you'll break fastAPI! #####
 def make_prediction(
         sample_sudoku: Union[Image.Image, Dict[str, Any]],
-        preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor],
-        cnn: CNN
+        preprocessor: DatasetPreprocessor,
+        cnn: CNN,
+        binary: bool = False
         ) -> Union[List[int], List[List[int]]]:
     '''
     Full prediction pipeline for a sudoku
@@ -22,8 +20,8 @@ def make_prediction(
     digit_dataset = preprocess(sample_sudoku, preprocessor)
     predictions = cnn.predict(digit_dataset)
     large_digits = find_labels_main(predictions)
-    all_digits = find_labels_candidate(large_digits, digit_dataset, cnn)
-    return all_digits
+    all_digits = find_labels_candidate(large_digits, digit_dataset, cnn, binary)
+    return large_digits, all_digits
 
 
 def find_labels_main(predictions: np.ndarray) -> List[int]:
@@ -37,7 +35,12 @@ def find_labels_main(predictions: np.ndarray) -> List[int]:
     return labels
 
 
-def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image], cnn: CNN) -> List[List[int]]:
+def find_labels_candidate(
+        cell_labels: List[int],
+        cell_images: List[Image.Image],
+        cnn: CNN,
+        binary: bool = False
+        ) -> List[List[int]]:
     '''
     Finds the labels of the candidate digits in the empty cells and adds them to the dataset.
     '''
@@ -67,7 +70,8 @@ def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image]
             binary_cell[0] = 1  # marks the cell as solved (has a large digit)
             binary_cell[label] = 1  # marks the digit
         binary_cell_labels.append(binary_cell)
-
+    if binary:
+        return binary_cell_labels
     return human_cell_labels
 
 

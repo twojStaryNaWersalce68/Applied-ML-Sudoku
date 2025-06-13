@@ -1,15 +1,16 @@
-tensorflow
-keras
-Pillow
-opencv-python
-fastapi
-tqdm
-numpy
-scikit-learn
-typing
-uvicorn
-python-multipart
-pydantic
-datasets
-matplotlib
-keras-tuner
+tensorflow == 2.16.2
+keras == 3.10.0
+Pillow == 11.2.1
+opencv-python == 4.11.0.86
+fastapi == 0.115.12
+tqdm == 4.67.1
+numpy == 1.26.4
+scikit-learn == 1.6.1
+typing == 3.7.4.3
+uvicorn == 0.34.3
+python-multipart == 0.0.20
+pydantic == 2.11.5
+datasets == 3.6.0
+matplotlib == 3.10.3
+streamlit == 1.45.1
+streamlit-image-coordinates == 0.3.1

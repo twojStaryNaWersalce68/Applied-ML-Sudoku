@@ -87,7 +87,7 @@ class SVM():
 
         return cm, {
             "test accuracy": test_accuracy,
-            "sudoku accuracy": correct_percent,
+            "sudoku accuracy w/o ED": correct_percent,
             "precision macro": report["macro avg"]["precision"],
             "recall macro": report["macro avg"]["recall"],
             "f1 macro": report["macro avg"]["f1-score"]
