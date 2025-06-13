@@ -15,16 +15,16 @@ st.set_page_config(
 if "uploaded" not in st.session_state:
     st.session_state["uploaded"] = None
 
-col1, col2 = st.columns([0.7,0.3])
 
-st.title("Sudoku digitiser")
+st.title("Sudoku Extractor")
 
-st.write("Upload an image of your sudoku, select where the corners are and then we will digitise the sudoku so you can copy the 9x9 matrix.")
+st.write("Upload an image of your sudoku, select where the corners are and then we will extract the sudoku so you can copy the 9x9 matrix.")
 
 st.session_state["uploaded"] = st.file_uploader("upload your sudoku here, file type: png, jpg, jpeg")
 
 sudoku_file = st.session_state["uploaded"]
 
+col1, col2 = st.columns([0.7,0.3])
 if sudoku_file:
     with Image.open(sudoku_file) as img:
         with col1:
@@ -34,7 +34,7 @@ if sudoku_file:
             converter = ImageConverter(3)
             clahe_img = converter.apply_clahe(img)
 
-            if st.button("digitise sudoku"):
+            if st.button("extract sudoku"):
                 handler = DatasetHandler()
                 preprocessor = DatasetPreprocessor(handler)
                 cnn = get_model(False, "cnn", "32_64_128", preprocessor)
