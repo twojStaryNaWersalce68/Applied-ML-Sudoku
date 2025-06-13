@@ -60,7 +60,6 @@ In order to change what running the file does, open the file [sudoku_digitalisat
 - GET_SVM: This loads a preexisting SVM and uses that instead of training a new one.
 - COMPARE: This compares the CNN model to the SVM model by comparing the mean and variance
 - EVALUATE: Evaluates the CNN model, either the one that was just trained or loads the one saved under sudoku_digitalisation/models/saved, if TRAIN_CNN is set to false and there is no saved model, it will throw an error.
-- PREDICT: Takes a image from the test set and predicts and outputs the sudoku.
 
 ### Running the streamlit prototype
 
