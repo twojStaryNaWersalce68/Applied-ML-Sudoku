@@ -8,7 +8,7 @@ from sklearn.metrics import (
     classification_report,
     accuracy_score
     )
-
+# current best is 16 64 256 64, 0.001
 CELL_NUM = 81
 
 class CNN:
@@ -29,29 +29,32 @@ class CNN:
         '''
         Build the model
         '''
-        cnn = keras.models.Sequential()
+        input = keras.Input(shape=self.input_shape)
 
-        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Conv2D(filters=32, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Dropout(0.2))
+        conv1A = keras.layers.Conv2D(filters=16, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu')(input)
+        conv1B = keras.layers.Conv2D(filters=16, kernel_size=(3, 3), input_shape=self.input_shape, activation='relu')(conv1A)
+        maxpool1 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv1B)
+        dropout1 = keras.layers.Dropout(0.2)(maxpool1)
 
-        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu'))
-        cnn.add(keras.layers.MaxPooling2D(pool_size=(2, 2)))
-        cnn.add(keras.layers.Dropout(0.2))
+        conv2A = keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(dropout1)
+        conv2B = keras.layers.Conv2D(filters=64, kernel_size=(3, 3), activation='relu')(conv2A)
+        maxpool2 = keras.layers.MaxPooling2D(pool_size=(2, 2))(conv2B)
+        dropout2 = keras.layers.Dropout(0.2)(maxpool2)
 
-        cnn.add(keras.layers.Flatten())
+        flatten = keras.layers.Flatten()(dropout2)
 
-        cnn.add(keras.layers.Dense(units=128, activation='relu'))
-        cnn.add(keras.layers.Dropout(0.2))
+        dense1 = keras.layers.Dense(units=256, activation='relu')(flatten)
+        dropout3 = keras.layers.Dropout(0.2)(dense1)
 
-        cnn.add(keras.layers.Dense(units=self.num_classes, activation='softmax'))
+        dense2 = keras.layers.Dense(units=64, activation='relu')(dropout3)
+        dropout4 = keras.layers.Dropout(0.2)(dense2)
 
-        cnn.compile(
-            optimizer='adam',
+        output = keras.layers.Dense(units=self.num_classes, activation='softmax')(dropout4)
+
+        model = keras.Model(inputs=input, outputs=output)
+
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=0.001),
             loss='categorical_crossentropy',
             metrics=[
                 'accuracy',
@@ -59,7 +62,7 @@ class CNN:
                 keras.metrics.Recall(name='recall')
             ]
         )
-        return cnn
+        return model
     
     def _reshape_image_CNN(self, img: Image.Image) -> np.ndarray:
         '''
