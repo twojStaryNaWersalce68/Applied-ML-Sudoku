@@ -34,7 +34,12 @@ def find_labels_main(predictions: np.ndarray) -> List[int]:
     return labels
 
 
-def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image], cnn: CNN) -> List[List[int]]:
+def find_labels_candidate(
+        cell_labels: List[int],
+        cell_images: List[Image.Image],
+        cnn: CNN,
+        binary: bool = False
+        ) -> List[List[int]]:
     '''
     Finds the labels of the candidate digits in the empty cells and adds them to the dataset.
     '''
@@ -64,7 +69,8 @@ def find_labels_candidate(cell_labels: List[int], cell_images: List[Image.Image]
             binary_cell[0] = 1  # marks the cell as solved (has a large digit)
             binary_cell[label] = 1  # marks the digit
         binary_cell_labels.append(binary_cell)
-
+    if binary:
+        return binary_cell_labels
     return human_cell_labels
 
 
