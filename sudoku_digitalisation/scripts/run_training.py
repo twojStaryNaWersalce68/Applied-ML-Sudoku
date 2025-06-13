@@ -1,4 +1,5 @@
-from typing import Optional, Union
+from typing import Optional, Union, List
+from PIL import Image
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
@@ -42,7 +43,7 @@ def get_model(
         raise ValueError(f"Unknown model_type '{model_type}'. Expected 'cnn' or 'svm'.")
 
 
-def get_train_val(preprocessor: DatasetPreprocessor):
+def get_train_val(preprocessor: DatasetPreprocessor) -> List[List[Image.Image], List[int], List[Image.Image], List[int]]:
     '''
     Get the train and validation splits from the preprocessor.
     '''

@@ -75,7 +75,10 @@ def find_labels_candidate(
     return human_cell_labels
 
 
-def preprocess(sample_sudoku: Union[Image.Image, Dict[str, Any]], preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor]) -> List[Image.Image]:
+def preprocess(
+        sample_sudoku: Union[Image.Image, Dict[str, Any]],
+        preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor]
+        ) -> List[Image.Image]:
     '''
     Preprocesses the given sudoku image.
     '''

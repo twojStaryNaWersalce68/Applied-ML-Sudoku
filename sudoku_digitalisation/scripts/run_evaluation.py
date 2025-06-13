@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Union
+from typing import Union, Tuple, List
+from PIL import Image
+
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
@@ -65,7 +67,7 @@ def evaluate_edge_detection(preprocessor: DatasetPreprocessor) -> None:
     accuracy = sum(prediction_correct) / len(prediction_correct) * 100
     print(f"Edge detection accuracy: {accuracy}%")
 
-def get_test(preprocessor: DatasetPreprocessor):
+def get_test(preprocessor: DatasetPreprocessor) -> Tuple[List[Image.Image], List[int]]:
     '''
     Get the test set from the preprocessor.
     '''
