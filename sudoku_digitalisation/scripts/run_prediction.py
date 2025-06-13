@@ -10,8 +10,9 @@ from datasets import Dataset
 ##### Make sure not to do show image in here, otherwise you'll break fastAPI! #####
 def make_prediction(
         sample_sudoku: Union[Image.Image, Dict[str, Any]],
-        preprocessor: Union[DatasetPreprocessor, SudokuPreprocessor],
-        cnn: CNN
+        preprocessor: DatasetPreprocessor,
+        cnn: CNN,
+        binary: bool = False
         ) -> Union[List[int], List[List[int]]]:
     '''
     Full prediction pipeline for a sudoku
@@ -19,8 +20,8 @@ def make_prediction(
     digit_dataset = preprocess(sample_sudoku, preprocessor)
     predictions = cnn.predict(digit_dataset)
     large_digits = find_labels_main(predictions)
-    all_digits = find_labels_candidate(large_digits, digit_dataset, cnn)
-    return all_digits
+    all_digits = find_labels_candidate(large_digits, digit_dataset, cnn, binary)
+    return large_digits, all_digits
 
 
 def find_labels_main(predictions: np.ndarray) -> List[int]:
