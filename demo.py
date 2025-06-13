@@ -38,8 +38,8 @@ if sudoku_file:
                 handler = DatasetHandler()
                 preprocessor = DatasetPreprocessor(handler)
                 cnn = get_model(False, "cnn", "32_64_128", preprocessor)
-                digitised_sudoku = make_prediction(clahe_img, preprocessor, cnn)
+                large_digits, candidate_digits = make_prediction(clahe_img, preprocessor, cnn)
                 for i in range(9):
-                    st.markdown(digitised_sudoku[i*9:i*9+9])
+                    st.markdown(candidate_digits[i*9:i*9+9])
 
 # streamlit run demo.py

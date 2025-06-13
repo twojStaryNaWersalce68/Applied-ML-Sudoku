@@ -5,17 +5,49 @@ from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
 from sudoku_digitalisation.scripts.run_comparison import show_cm
+from sudoku_digitalisation.scripts.run_prediction import make_prediction
+from sudoku_digitalisation.features.sudoku_splitter import SudokuSplitter
+
+
+def full_evaluation(
+        cnn: CNN,
+        preprocessor: DatasetPreprocessor        
+        ) -> None:
+    '''
+    Compares two one-hot encoded sudokus, returns true if they are the same.
+    '''
+    solution_correct = 0
+    candidate_correct = 0
+    X_test = preprocessor.handler.datasets['raw']['test']['image']
+    y_test = preprocessor.handler.datasets['raw']['test']['cells']
+    for i, image in enumerate(X_test):
+        large_digits, binary_pred = make_prediction(image, preprocessor, cnn, binary=True)
+        if large_digits == SudokuSplitter.split_labels(y_test[i]):
+            solution_correct += 1
+        if np.array_equal(binary_pred, y_test[i]):
+            candidate_correct += 1
+    solution_percentage = solution_correct / len(X_test) * 100
+    candidate_percentage = candidate_correct / len(X_test) * 100
+    print(f"Percentage of fully correct sudokus without candidate digits: {solution_percentage}%")
+    print(f"Percentage of fully correct sudokus with candidate digits: {candidate_percentage}%")
 
 def compare_bbox(
         true_bbox: np.ndarray,
         pred_bbox: np.ndarray,
         tolerance: int = 20
         ) -> bool:
+    '''
+    Compares two bounding boxes, returns true if the mean distance between
+    all points is lower than "tolerance".
+    '''
     distances = np.linalg.norm(true_bbox - pred_bbox, axis=-1)
     mean_distance = np.mean(distances)
     return mean_distance <= tolerance
 
 def evaluate_edge_detection(preprocessor: DatasetPreprocessor) -> None:
+    '''
+    Prints the edge detection accuracy, tested on the training set.
+    '''
     prediction_correct = []
     image_dataset = preprocessor.handler.datasets['raw']['train']['image']
     label_dataset = preprocessor.handler.datasets['raw']['train']['keypoints']
@@ -44,7 +76,11 @@ def get_test(preprocessor: DatasetPreprocessor):
 
     return X_test, y_test
 
-def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, trained: bool):
+def evaluate_model(
+        model: Union[CNN, SVM],
+        preprocessor: DatasetPreprocessor,
+        trained: bool
+        ) -> None:
     '''
     Evaluates the model's accuracy, precision, recall and F1
     '''
@@ -67,7 +103,7 @@ def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, tr
     print(f"Test set F1 score: {info['f1 macro']:.4f}")
 
     # accuracy on sudokus
-    print(f"Accuracy for fully correct sudokus: {info['sudoku accuracy']}")
+    print(f"Accuracy for fully correct sudokus: {info['sudoku accuracy w/o ED']}")
 
     if trained:
         # Accuracy plot over time

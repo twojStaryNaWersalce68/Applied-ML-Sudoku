@@ -54,10 +54,10 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Failed to process image: {e}")
 
     try:
-        result = make_prediction(image, preprocessor, cnn_model)
+        large_digits, candidate_digits = make_prediction(image, preprocessor, cnn_model)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
 
-    return JSONResponse(content={"sudoku_grid": result})
+    return JSONResponse(content={"sudoku_grid": candidate_digits})
 
 # Run with: uvicorn fastAPI:app --reload
