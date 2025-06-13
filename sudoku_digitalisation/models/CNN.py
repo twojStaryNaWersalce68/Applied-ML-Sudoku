@@ -166,6 +166,7 @@ class CNN:
 
 
     def save(self, name: str, path: str=None) -> None:
+        """Saves the model."""
         if path is None:
             base_dir = os.path.dirname(__file__)
             path = os.path.join(base_dir, "saved", "cnn")
@@ -174,6 +175,7 @@ class CNN:
         self.model.save(save_path)
 
     def load(self, name: str, path: str=None) -> None:
+        """Loads the model from a local save."""
         if path is None:
             base_dir = os.path.dirname(__file__)
             path = os.path.join(base_dir, "saved", "cnn")
