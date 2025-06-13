@@ -103,7 +103,7 @@ def evaluate_model(
     print(f"Test set F1 score: {info['f1 macro']:.4f}")
 
     # accuracy on sudokus
-    print(f"Accuracy for full sudokus w/o edge detection: {info['sudoku accuracy']}")
+    print(f"Accuracy for full sudokus w/o edge detection: {info['sudoku accuracy w/o ED']}")
 
     if trained:
         # Accuracy plot over time
