@@ -1,7 +1,8 @@
+import numpy as np
 from sudoku_digitalisation.features.sudoku_preprocessing import get_preprocessor
 from sudoku_digitalisation.scripts.run_training import get_model
 from sudoku_digitalisation.scripts.run_comparison import compare_cnn_svm
-from sudoku_digitalisation.scripts.run_evaluation import evaluate_model, evaluate_edge_detection
+from sudoku_digitalisation.scripts.run_evaluation import evaluate_model, get_binary_labels, evaluate_edge_detection
 
 # Run: "python -m sudoku_digitalisation.main" if you have ModuleNotFoundError
 if __name__ == "__main__":
@@ -9,7 +10,7 @@ if __name__ == "__main__":
     IS_PREPROCESSED = True      # bool to see if the dataset is preprocessed already
     TRAIN_CNN = False           # change this to True if you want to train the CNN, otherwise it is loaded
     TRAIN_SVM = False           # change this to True if you want to train the SVM (baseline), otherwise it is loaded
-    GET_SVM = True             # if this is set to False, the SVM is not gotten
+    GET_SVM = False             # if this is set to False, the SVM is not gotten
     EVALUATE = True            # change to true if you want to run the evaluation
     COMPARISON = False          # change to True if you want to compare our CNN model to the SVM baseline
 

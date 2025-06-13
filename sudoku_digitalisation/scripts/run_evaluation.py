@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import Union
+from typing import Union, List
 from sudoku_digitalisation.models.CNN import CNN
 from sudoku_digitalisation.models.SVM import SVM
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
@@ -44,13 +44,28 @@ def get_test(preprocessor: DatasetPreprocessor):
 
     return X_test, y_test
 
+
+def get_binary_labels(preprocessor: DatasetPreprocessor) -> List[int]:
+    """
+    Get the binary labels of the test set from the preprocessor.
+    """
+    y_raw_dataset = preprocessor.handler.datasets['raw']['test']['cells']
+    y_raw = []
+    for sudoku in y_raw_dataset:
+        for row in sudoku:
+            for cell in row:
+                y_raw.append(cell)
+    return y_raw
+
+
 def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, trained: bool):
     '''
     Evaluates the model's accuracy, precision, recall and F1
     '''
     X_test, y_test = get_test(preprocessor)
+    y_binary = get_binary_labels(preprocessor)
 
-    cm, info, history = model.evaluate(X_test, y_test)
+    cm, info, history = model.evaluate(X_test, y_test, y_binary)
 
     # Confusion matrix
     show_cm(cm)
@@ -60,6 +75,7 @@ def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, tr
     for i, acc in enumerate(class_accuracies):
         print(f"Accuracy for digit {i}: {acc:.4f}")
     print(f"Test set accuracy: {info['test accuracy']:.4f}")
+    print(f"Test set accuracy with candidate digits: {info['test accuracy candidate']:.4f}")
 
     # Per class precision, recall and F1
     print(f"Test set precision: {info['precision macro']:.4f}")

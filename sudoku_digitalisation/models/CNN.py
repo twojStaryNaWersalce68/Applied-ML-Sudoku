@@ -9,6 +9,8 @@ from sklearn.metrics import (
     accuracy_score
     )
 
+from sudoku_digitalisation.features.cell_splitter import CellSplitter
+
 CELL_NUM = 81
 
 class CNN:
@@ -122,8 +124,40 @@ class CNN:
         else:
             input = self._reshape_data_CNN(input)
         return self.model.predict(input)
-    
-    def evaluate(self, X_test: List[Image.Image], y_test: List[int]) -> dict:
+
+    def predict_candidate(self, cell_labels: List[int], cell_images: List[Image.Image], binary=False) -> List[List[int]]:
+        """Finds the labels of the candidate digits in the empty cells and adds them to the dataset."""
+        binary_cell_labels = []
+        human_cell_labels = []
+        for idx, cell_img in enumerate(cell_images):
+            binary_cell = [0] * 10
+            label = cell_labels[idx]
+            if label == 0:
+                cand_cell_labels = []
+                candidate_digits = CellSplitter.get_candidate_digits(cell_img)
+                if len(candidate_digits) > 0:
+                    predictions = self.predict(candidate_digits)
+                    for prediction in predictions:
+                        candidate_label = np.argmax(prediction)
+                        if 0 < candidate_label <= 9:
+                            binary_cell[candidate_label] = 1
+                    for jdx in range(len(binary_cell)):
+                        if binary_cell[jdx] == 1:
+                            cand_cell_labels.append(jdx)
+                if len(cand_cell_labels) > 0:
+                    human_cell_labels.append(cand_cell_labels)
+                else:
+                    human_cell_labels.append([0])
+            else:
+                human_cell_labels.append([label])
+                binary_cell[0] = 1  # marks the cell as solved (has a large digit)
+                binary_cell[label] = 1  # marks the digit
+            binary_cell_labels.append(binary_cell)
+        if binary:
+            return binary_cell_labels  # used for eval
+        return human_cell_labels  # used for predict
+
+    def evaluate(self, X_test: List[Image.Image], y_test: List[int], y_binary: List[int]) -> dict:
         '''
         Evaluates the model and returns metrics for comparison.
         '''
@@ -132,6 +166,15 @@ class CNN:
         y_test = np.array(y_test)
         y_pred_probs = self.predict(X_test)
         y_pred = np.argmax(y_pred_probs, axis=1)
+
+        # Predicted labels holding both the solved and candidate digits
+        y_pred_binary = np.array(self.predict_candidate(y_pred, X_test, binary=True))
+        y_binary = np.array(y_binary)
+        correct_cells_candiate = 0
+        for idx in range(len(y_pred_binary)):
+            if np.array_equal(y_pred_binary[idx], y_binary[idx]):
+                correct_cells_candiate += 1
+        accuracy_cells_candidate = correct_cells_candiate / len(y_pred_binary)
 
         # Test accuracy
         test_accuracy = accuracy_score(y_test, y_pred)
@@ -155,6 +198,7 @@ class CNN:
 
         return cm, {
             "test accuracy": test_accuracy,
+            "test accuracy candidate": accuracy_cells_candidate,
             "sudoku accuracy": correct_percent,
             "precision macro": report["macro avg"]["precision"],
             "recall macro": report["macro avg"]["recall"],
