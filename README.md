@@ -50,6 +50,8 @@ python -m sudoku_digitalisation.main
 
 Running it in a different way may result in a ModuleNotFoundError.
 
+When running the file for the first time, you need to make sure that you import the dataset and preprocess it first, this is done by putting the IS_PREPROCESSED boolean in the main file to False. This will automatically fetch and locally save the dataset from hugging face (if you want to see the dataset for yourself, click [here](https://huggingface.co/datasets/Lexski/sudoku-image-recognition)).
+
 In order to change what running the file does, open the file [sudoku_digitalisation/main.py](sudoku_digitalisation/main.py). Within this file, from lines 10 to 16, you will find booleans that you can set to true or false depending on what you want the code to run. What each boolean does
 
 - IS_PREPROCESSED: If the dataset is not already on your computer (it does not come with the repo), set this to false and it will preprocess the data for you and save it locally, after that you can set it to true for the rest of your runs.
@@ -58,7 +60,7 @@ In order to change what running the file does, open the file [sudoku_digitalisat
 - GET_SVM: This loads a preexisting SVM and uses that instead of training a new one.
 - COMPARE: This compares the CNN model to the SVM model by comparing the mean and variance
 - EVALUATE: Evaluates the CNN model, either the one that was just trained or loads the one saved under sudoku_digitalisation/models/saved, if TRAIN_CNN is set to false and there is no saved model, it will throw an error.
-- PREDICT: Extracts and outputs a sudoku from the test set.
+- PREDICT: Takes a image from the test set and predicts and outputs the sudoku.
 
 ### Running the streamlit prototype
 
