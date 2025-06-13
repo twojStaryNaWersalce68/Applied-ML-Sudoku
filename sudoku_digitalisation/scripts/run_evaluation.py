@@ -67,7 +67,7 @@ def evaluate_model(model: Union[CNN, SVM], preprocessor: DatasetPreprocessor, tr
     print(f"Test set F1 score: {info['f1 macro']:.4f}")
 
     # accuracy on sudokus
-    print(f"Accuracy for fully correct sudokus: {info['sudoku accuracy']}")
+    print(f"Accuracy for full sudokus w/o edge detection: {info['sudoku accuracy']}")
 
     if trained:
         # Accuracy plot over time
