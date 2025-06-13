@@ -1,11 +1,8 @@
 import streamlit as st
-import numpy as np
-from streamlit_image_coordinates import streamlit_image_coordinates
-from PIL import ImageDraw, Image
-from sudoku_digitalisation.features.image_operations import ImageCropper, ImageConverter
+from PIL import Image
+from sudoku_digitalisation.features.image_operations import ImageConverter
 from sudoku_digitalisation.features.sudoku_preprocessing import DatasetPreprocessor
 from sudoku_digitalisation.features.dataset_handler import DatasetHandler
-from sudoku_digitalisation.features.edge_detector import EdgeDetector
 from sudoku_digitalisation.scripts.run_training import get_model
 from sudoku_digitalisation.scripts.run_prediction import make_prediction
 
@@ -44,3 +41,5 @@ if sudoku_file:
                 digitised_sudoku = make_prediction(clahe_img, preprocessor, cnn)
                 for i in range(9):
                     st.markdown(digitised_sudoku[i*9:i*9+9])
+
+# streamlit run demo.py
